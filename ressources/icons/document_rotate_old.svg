@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg
+   viewBox="0 0 35.13 35.130002"
+   id="unlock-rotation"
+   version="1.1"
+   sodipodi:docname="document_rotate.svg"
+   inkscape:version="1.4.3 (0d15f75042, 2025-12-25)"
+   inkscape:export-filename="document_rotate.png"
+   inkscape:export-xdpi="107.59"
+   inkscape:export-ydpi="107.59"
+   width="35.130001"
+   height="35.130001"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:svg="http://www.w3.org/2000/svg">
+  <defs
+     id="defs3" />
+  <sodipodi:namedview
+     id="namedview3"
+     pagecolor="#505050"
+     bordercolor="#eeeeee"
+     borderopacity="1"
+     inkscape:showpageshadow="0"
+     inkscape:pageopacity="0"
+     inkscape:pagecheckerboard="0"
+     inkscape:deskcolor="#505050"
+     inkscape:zoom="19.358831"
+     inkscape:cx="17.563044"
+     inkscape:cy="17.795496"
+     inkscape:window-width="2048"
+     inkscape:window-height="1083"
+     inkscape:window-x="0"
+     inkscape:window-y="0"
+     inkscape:window-maximized="1"
+     inkscape:current-layer="unlock-rotation"
+     showguides="true" />
+  <g
+     id="g3"
+     transform="matrix(-1,0,0,1,35.100425,2.7748404)">
+    <g
+       id="g2">
+      <path
+         d="m 31.17,14.31 h 4 l -5.2,7.81 -5.2,-7.8 h 3.85 C 28.54,13.84 28.49,13.39 28.4,12.95 A 13,13 0 1 0 13.09,28.37 12.71,12.71 0 0 0 24,25.54 a 1.33,1.33 0 0 1 2.09,0.34 1.28,1.28 0 0 1 -0.33,1.59 15.62,15.62 0 1 1 5,-15.58 c 0.18,0.73 0.26,1.48 0.38,2.23 0.01,0.05 0.02,0.11 0.03,0.19 z"
+         id="path1" />
+    </g>
+  </g>
+  <path
+     d="m 26.654001,14.4551 a 1.1514986,1.1760215 0 0 0 -0.05274,-0.242386 v -0.0808 A 0.94053704,0.96056716 0 0 0 26.43425,13.880551 v 0 L 21.16021,8.4941935 v 0 a 0.94053704,0.96056716 0 0 0 -0.246122,-0.170568 h -0.07911 l -0.281282,-0.09875 h -5.32678 a 2.6370197,2.693179 0 0 0 -2.63702,2.6931785 v 12.568172 a 2.6370197,2.693179 0 0 0 2.63702,2.693179 h 8.790066 a 2.6370197,2.693179 0 0 0 2.637019,-2.693179 v -8.977263 z m -5.274039,-3.168974 2.276627,2.325111 h -2.276627 z m 3.516026,12.2001 a 0.87900658,0.89772632 0 0 1 -0.879006,0.897727 H 15.226916 A 0.87900658,0.89772632 0 0 1 14.347909,23.486226 V 10.918058 a 0.87900658,0.89772632 0 0 1 0.879007,-0.897726 h 4.395033 v 4.488631 a 0.87900658,0.89772632 0 0 0 0.879006,0.897727 h 4.395033 z"
+     id="path1-3"
+     style="display:none;stroke-width:0.888317" />
+</svg>
