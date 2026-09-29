@@ -12,12 +12,16 @@
 #include "eventstore.h"
 #include "eventheader.h"
 #include "eventdialog.h"
+#include "songspage.h"
+#include "songstore.h"
+#include "songeditor.h"
 
 #include <QCloseEvent>
 #include <QFileDialog>
 #include <QFileInfo>
 #include <QInputDialog>
 #include <QJsonArray>
+#include <algorithm>
 #include <QJsonDocument>
 #include <QJsonObject>
 #include <QMenu>
@@ -43,6 +47,8 @@ MainWin::MainWin(QWidget *parent)
     ui->libraryBrowser->setLibrary(m_library);
     m_events = new EventStore(this);
     ui->eventsBrowser->setStore(m_events);
+    m_songs = new SongStore(this);
+    ui->songsBrowser->setStore(m_songs);
 
     initializeForm();
     initializeConnections();
@@ -71,6 +77,8 @@ void MainWin::initializeForm() {
 
     ui->presenterToolbar->addSpacer();  // Spacer for align buttons right
 
+    m_songsBtn = ui->presenterToolbar->addButton("songsBtn", "", ":icons/type_song");
+    m_songsBtn->setToolTip(tr("Song library"));
     m_libraryBtn = ui->presenterToolbar->addButton("libraryBtn", "", ":icons/library");
     m_libraryBtn->setToolTip(tr("Media library"));
     m_settingsBtn = ui->presenterToolbar->addButton("settingsBtn", "", ":icons/settings");
@@ -105,6 +113,20 @@ void MainWin::initializeForm() {
     ui->libraryToolbar->addSpacer();
     m_libraryApplyBtn  = ui->libraryToolbar->addButton("libraryApplyBtn", tr("Apply"), ":icons/check", true);
     m_libraryApplyBtn->setToolTip(tr("Put the selected entries into the playlist"));
+
+    // --- Songs toolbar
+    m_songsBackBtn   = ui->songsToolbar->addButton("songsBackBtn", tr("Back"), ":icons/back", true);
+    m_songsBackBtn->setToolTip(tr("Back to the presentation"));
+    m_songsNewBtn    = ui->songsToolbar->addButton("songsNewBtn", tr("New"), ":icons/add", true);
+    m_songsNewBtn->setToolTip(tr("Type in a new song"));
+    m_songsEditBtn   = ui->songsToolbar->addButton("songsEditBtn", tr("Edit"), ":icons/edit", true);
+    m_songsEditBtn->setToolTip(tr("Lyrics, parts and order of the song"));
+    m_songsImportBtn = ui->songsToolbar->addButton("songsImportBtn", tr("Import"), ":icons/download", true);
+    m_songsImportBtn->setToolTip(tr("Import lyrics files downloaded from SongSelect (*.txt)"));
+    m_songsRemoveBtn = ui->songsToolbar->addButton("songsRemoveBtn", tr("Delete"), ":icons/remove", true);
+    ui->songsToolbar->addSpacer();
+    m_songsApplyBtn  = ui->songsToolbar->addButton("songsApplyBtn", tr("Apply"), ":icons/check", true);
+    m_songsApplyBtn->setToolTip(tr("Put the selected songs into the playlist"));
 
     // --- Events toolbar
     m_eventsBackBtn   = ui->eventsToolbar->addButton("eventsBackBtn", tr("Back"), ":icons/back", true);
@@ -153,7 +175,7 @@ void MainWin::initializeForm() {
                        this, &MainWin::addBlank);
     addMenu->addSeparator();
     addMenu->addAction(MediaItem::typeIcon(MediaItem::Song), tr("Song..."),
-                       this, [this] { addTextEntry(MediaItem::Song); });
+                       this, [this] { openSongsPage(true); });
     addMenu->addAction(MediaItem::typeIcon(MediaItem::Bible), tr("Bible text..."),
                        this, [this] { openBiblePage(nullptr); });
     addMenu->addAction(MediaItem::typeIcon(MediaItem::Custom), tr("Own slide..."),
@@ -232,6 +254,24 @@ void MainWin::initializeConnections() {
     connect(m_settingsBtn, &QToolButton::clicked, this, [this] { showPage(ui->settingsPage); });
     connect(m_backBtn,     &QToolButton::clicked, this, [this] { showPage(ui->presenterPage); });
     connect(m_bibleBackBtn,  &QToolButton::clicked, this, [this] { showPage(ui->presenterPage); });
+    connect(m_songsBtn,       &QToolButton::clicked, this, [this] { openSongsPage(false); });
+    connect(m_songsBackBtn,   &QToolButton::clicked, this, [this] { showPage(ui->presenterPage); });
+    connect(m_songsNewBtn,    &QToolButton::clicked, ui->songsBrowser, &SongsPage::newSong);
+    connect(m_songsEditBtn,   &QToolButton::clicked, ui->songsBrowser, &SongsPage::editSelected);
+    connect(m_songsImportBtn, &QToolButton::clicked, ui->songsBrowser, &SongsPage::importFiles);
+    // Corrected lyrics appear in the open event right away
+    connect(m_songs, &SongStore::changed, this, [this] {
+        for (int i = 0; i < ui->playlistWidget->count(); ++i) {
+            QListWidgetItem *item = ui->playlistWidget->item(i);
+            if (refreshSongEntry(item) && item == ui->playlistWidget->currentItem()) {
+                showEntry(item);
+            }
+        }
+    });
+    connect(m_songsRemoveBtn, &QToolButton::clicked, ui->songsBrowser, &SongsPage::removeSelected);
+    connect(m_songsApplyBtn,  &QToolButton::clicked, this, &MainWin::applySongSelection);
+    connect(ui->songsBrowser, &SongsPage::selectionChanged, this, &MainWin::updateButtonStates);
+    connect(ui->songsBrowser, &SongsPage::pickRequested, this, &MainWin::applySongSelection);
     connect(m_libraryBtn,       &QToolButton::clicked, this, [this] { openLibraryPage(false); });
     connect(m_libraryBackBtn,   &QToolButton::clicked, this, [this] { showPage(ui->presenterPage); });
     connect(m_libraryAddBtn,    &QToolButton::clicked, ui->libraryBrowser, &LibraryPage::addFiles);
@@ -449,6 +489,11 @@ void MainWin::editEntry(QListWidgetItem *item) {
         openBiblePage(item);
         return;
     }
+    if (type == MediaItem::Song
+        && m_songs->song(item->data(MediaItem::SongRole).toJsonObject().value("id").toString()).isValid()) {
+        editSongEntry(item);
+        return;
+    }
 
     TextSlideDialog dlg(this);
     dlg.setType(type);
@@ -578,6 +623,10 @@ QJsonObject MainWin::entryToJson(const QListWidgetItem *item) const {
         if (!bible.isEmpty()) {
             o.insert("bible", bible);
         }
+        const QJsonObject song = item->data(MediaItem::SongRole).toJsonObject();
+        if (!song.isEmpty()) {
+            o.insert("song", song);
+        }
     } else {
         o.insert("source", item->data(MediaItem::SourceRole).toString());
         const QString libraryId = item->data(MediaItem::LibraryRole).toString();
@@ -595,6 +644,10 @@ QListWidgetItem *MainWin::entryFromJson(const QJsonObject &o) {
                                         o.value("text").toString());
     if (o.contains("bible")) {
         item->setData(MediaItem::BibleRole, o.value("bible").toObject());
+    }
+    if (o.contains("song")) {
+        item->setData(MediaItem::SongRole, o.value("song").toObject());
+        refreshSongEntry(item);   // corrections made in the library since the last time
     }
     // Library entries: the file location comes from the library ("source" is only a fallback)
     const QString libraryId = o.value("library").toString();
@@ -628,6 +681,11 @@ void MainWin::updateButtonStates() {
     m_libraryRemoveBtn->setEnabled(librarySelection);
     m_libraryApplyBtn->setEnabled(librarySelection);
 
+    const bool songSelection = !ui->songsBrowser->selectedIds().isEmpty();
+    m_songsRemoveBtn->setEnabled(songSelection);
+    m_songsEditBtn->setEnabled(ui->songsBrowser->selectedIds().size() == 1);
+    m_songsApplyBtn->setEnabled(songSelection && !m_eventId.isEmpty());
+
     const bool eventSelection = !ui->eventsBrowser->selectedId().isEmpty();
     m_eventsEditBtn->setEnabled(eventSelection);
     m_eventsRemoveBtn->setEnabled(eventSelection);
@@ -645,6 +703,148 @@ void MainWin::showPage(QWidget *page) {
         m_editingBibleItem = nullptr;
     }
     updateButtonStates();
+}
+
+// ====== Song library page ======
+
+void MainWin::openSongsPage(bool pick) {
+    ui->songsBrowser->setPickMode(pick);
+    m_songsApplyBtn->setVisible(pick);
+    showPage(ui->songsPage);
+}
+
+void MainWin::applySongSelection() {
+    const QStringList ids = ui->songsBrowser->selectedIds();
+    if (ids.isEmpty() || m_eventId.isEmpty()) {
+        return;
+    }
+    showPage(ui->presenterPage);
+    for (const QString &id : ids) {
+        const Song song = m_songs->song(id);
+        if (!song.isValid()) {
+            continue;
+        }
+        // The text is a copy: the event stays complete even if the song is changed or deleted.
+        // The reference allows own orders per event later on.
+        QListWidgetItem *item = createEntry(song.title, MediaItem::Song, {}, song.slideText());
+        // Credits are kept with the entry as well: needed on the slides even without the library
+        item->setData(MediaItem::SongRole, QJsonObject{{"id", song.id}, {"authors", song.authors},
+                                                       {"copyright", song.copyright},
+                                                       {"ccli", song.ccliNumber}});
+        insertEntry(item);
+    }
+}
+
+bool MainWin::refreshSongEntry(QListWidgetItem *item) {
+    const QJsonObject o = item->data(MediaItem::SongRole).toJsonObject();
+    const Song song = m_songs->song(o.value("id").toString());
+    if (!song.isValid()) {
+        return false;   // not (any more) in the library: the entry keeps its copy
+    }
+    QStringList order;
+    for (const QJsonValue &v : o.value("order").toArray()) {
+        order << v.toString();
+    }
+    const QString text = song.slideText(order);
+    if (item->data(MediaItem::TextRole).toString() == text) {
+        return false;
+    }
+    item->setData(MediaItem::TextRole, text);
+    return true;
+}
+
+QList<SongPart> MainWin::songSlideParts(const QListWidgetItem *item) const {
+    const QJsonObject o = item->data(MediaItem::SongRole).toJsonObject();
+    const Song song = m_songs->song(o.value("id").toString());
+    if (!song.isValid()) {
+        return {};
+    }
+    QStringList order;
+    for (const QJsonValue &v : o.value("order").toArray()) {
+        order << v.toString();
+    }
+    return song.slideParts(order);
+}
+
+void MainWin::editSongEntry(QListWidgetItem *item) {
+    QJsonObject o = item->data(MediaItem::SongRole).toJsonObject();
+    const Song old = m_songs->song(o.value("id").toString());
+    QStringList order;
+    for (const QJsonValue &v : o.value("order").toArray()) {
+        order << v.toString();
+    }
+
+    SongEditorDialog dlg(old, order, SongEditorDialog::Event, this);
+    if (dlg.exec() != QDialog::Accepted) {
+        return;
+    }
+    // Lyrics and data: always into the library. Order: only here, unless it becomes the default.
+    Song edited = dlg.song();
+    const QStringList entryOrder = dlg.order();
+    if (!dlg.orderAsDefault()) {
+        edited.order = old.order;
+        const QStringList partIds = [&] {
+            QStringList ids;
+            for (const SongPart &p : std::as_const(edited.parts)) {
+                ids << p.id;
+            }
+            return ids;
+        }();
+        // Parts removed in the dialog must not stay in the default order
+        edited.order.erase(std::remove_if(edited.order.begin(), edited.order.end(),
+                                          [&](const QString &id) { return !partIds.contains(id); }),
+                           edited.order.end());
+    }
+    // The entry follows the default as long as it has no own order
+    if (entryOrder == edited.order) {
+        o.remove("order");
+    } else {
+        o.insert("order", QJsonArray::fromStringList(entryOrder));
+    }
+    o.insert("authors", edited.authors);
+    o.insert("copyright", edited.copyright);
+    o.insert("ccli", edited.ccliNumber);
+    if (item->text() == old.title) {
+        item->setText(edited.title);   // keep a title changed in the playlist
+    }
+    item->setData(MediaItem::SongRole, o);
+    m_songs->update(edited);   // refreshes the lyrics of all entries of this song
+    refreshSongEntry(item);
+    if (item == ui->playlistWidget->currentItem()) {
+        showEntry(item);
+    }
+}
+
+QString MainWin::songCredits(const QListWidgetItem *item) const {
+    const QJsonObject o = item->data(MediaItem::SongRole).toJsonObject();
+    if (o.isEmpty()) {
+        return {};
+    }
+    // Current data of the library, the copy of the entry if the song is gone
+    const Song song = m_songs->song(o.value("id").toString());
+    const QString authors   = song.isValid() ? song.authors : o.value("authors").toString();
+    const QString copyright = song.isValid() ? song.copyright : o.value("copyright").toString();
+    const QString ccli      = song.isValid() ? song.ccliNumber : o.value("ccli").toString();
+    const QString licence   = settings.value("ccli/licence").toString();
+
+    QStringList details;
+    if (!copyright.isEmpty()) {
+        details << QStringLiteral("\u00A9 %1").arg(copyright);
+    }
+    if (!ccli.isEmpty()) {
+        details << tr("CCLI Song # %1").arg(ccli);
+        if (!licence.isEmpty()) {
+            details << tr("CCLI License # %1").arg(licence);
+        }
+    }
+    QStringList lines;
+    if (!authors.isEmpty()) {
+        lines << item->text() + QStringLiteral(" \u2013 ") + authors;
+    }
+    if (!details.isEmpty()) {
+        lines << details.join(QStringLiteral("  \u00B7  "));
+    }
+    return lines.join('\n');
 }
 
 // ====== Media library page ======
@@ -819,7 +1019,8 @@ void MainWin::showEntry(QListWidgetItem *item) {
     m_deck = SlideDeck::create(MediaItem::Type(item->data(MediaItem::TypeRole).toInt()),
                                item->data(MediaItem::SourceRole).toString(),
                                item->data(MediaItem::TextRole).toString(),
-                               item->data(MediaItem::BibleRole).toJsonObject(), &error);
+                               item->data(MediaItem::BibleRole).toJsonObject(), &error,
+                               songCredits(item));
     if (!m_deck) {
         ui->previewLabel->setText(error);
         updateBeamer();
@@ -828,11 +1029,21 @@ void MainWin::showEntry(QListWidgetItem *item) {
 
     // Thumbnails
     const qreal dpr = devicePixelRatioF();
+    // Songs: the part of every slide as label ("Vers 1", "Chorus", ...)
+    QList<SongPart> parts = songSlideParts(item);
+    if (parts.size() != m_deck->count()) {
+        parts.clear();   // lyrics of the entry differ from the library (copy only)
+    }
     for (int i = 0; i < m_deck->count(); ++i) {
         QImage thumb = m_deck->render(i, kThumbSize * dpr);
         thumb.setDevicePixelRatio(dpr);
-        ui->slidesListWidget->addItem(new QListWidgetItem(QIcon(QPixmap::fromImage(thumb)),
-                                                          QString::number(i + 1)));
+        QString label = QString::number(i + 1);
+        if (!parts.isEmpty()) {
+            label = parts.at(i).label();
+        }
+        auto *slide = new QListWidgetItem(QIcon(QPixmap::fromImage(thumb)), label);
+        slide->setToolTip(QString::number(i + 1));
+        ui->slidesListWidget->addItem(slide);
     }
 
     const int start = startAtLast ? m_deck->count() - 1 : 0;

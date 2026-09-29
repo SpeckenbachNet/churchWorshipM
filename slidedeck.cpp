@@ -85,7 +85,8 @@ private:
 
 class TextDeck : public SlideDeck {
 public:
-    explicit TextDeck(const QString &text)
+    explicit TextDeck(const QString &text, const QString &credits = {})
+        : m_credits(credits)
     {
         static const QRegularExpression separator(QStringLiteral(R"(\n\s*\n)"));
         for (const QString &block : text.split(separator, Qt::SkipEmptyParts)) {
@@ -115,8 +116,24 @@ public:
         p.setPen(Qt::white);
 
         // Largest font size where the whole text fits into the safe area
-        const QRect area = image.rect().adjusted(size.width() / 16, size.height() / 12,
-                                                 -size.width() / 16, -size.height() / 12);
+        QRect area = image.rect().adjusted(size.width() / 16, size.height() / 12,
+                                           -size.width() / 16, -size.height() / 12);
+
+        // Credits (copyright, CCLI) small at the bottom of the first slide
+        if (index == 0 && !m_credits.isEmpty()) {
+            QFont small = QApplication::font();
+            small.setPixelSize(qMax(7, size.height() / 36));
+            const QFontMetrics fm(small);
+            const int lines = int(m_credits.count('\n')) + 1;
+            const int height = lines * fm.lineSpacing();
+            const QRect creditRect(area.left(), size.height() - size.height() / 24 - height,
+                                   area.width(), height);
+            p.setFont(small);
+            p.setPen(QColor(170, 170, 170));
+            p.drawText(creditRect, Qt::AlignHCenter | Qt::AlignBottom, m_credits);
+            p.setPen(Qt::white);
+            area.setBottom(qMin(area.bottom(), creditRect.top() - fm.lineSpacing()));
+        }
         const int flags = Qt::AlignCenter | Qt::TextWordWrap;
         const QString &text = m_pages.at(index);
 
@@ -138,6 +155,7 @@ public:
 
 private:
     QStringList m_pages;
+    QString     m_credits;
 };
 
 // ---------------------------------------------------------------------------
@@ -284,7 +302,7 @@ std::unique_ptr<SlideDeck> SlideDeck::createBible(const BiblePassage &passage)
 
 std::unique_ptr<SlideDeck> SlideDeck::create(MediaItem::Type type, const QString &source,
                                              const QString &text, const QJsonObject &bible,
-                                             QString *error)
+                                             QString *error, const QString &credits)
 {
     if (type == MediaItem::Bible && !bible.isEmpty()) {
         const BiblePassage passage = BiblePassage::fromJson(bible);
@@ -317,6 +335,7 @@ std::unique_ptr<SlideDeck> SlideDeck::create(MediaItem::Type type, const QString
         return deck->load(pdf, error) ? std::move(deck) : nullptr;
     }
     case MediaItem::Song:
+        return std::make_unique<TextDeck>(text, credits);
     case MediaItem::Bible:
     case MediaItem::Custom:
         return std::make_unique<TextDeck>(text);

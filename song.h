@@ -16,6 +16,7 @@
  */
 #pragma once
 
+#include <QColor>
 #include <QDateTime>
 #include <QJsonObject>
 #include <QList>
@@ -32,6 +33,8 @@ struct SongPart {
     QString text;    // lines of the part; a line "---" forces a new slide
 
     QString label() const;   // translated display name, e.g. "Vers 1"
+    static QString idPrefix(Kind kind);   // "V", "C", "B", ...
+    static QColor  color(Kind kind);      // marker color: verse blue, chorus orange, ...
     QJsonObject toJson() const;
     static SongPart fromJson(const QJsonObject &o);
 };
@@ -59,6 +62,9 @@ struct Song {
     QString slideText(const QStringList &order = {}) const;
 
     QString allText() const;   // every part once, for the full text search
+
+    // The part of every slide of slideText(order), e.g. for labels of the thumbnails
+    QList<SongPart> slideParts(const QStringList &order = {}) const;
 
     QJsonObject toJson() const;
     static Song fromJson(const QJsonObject &o);

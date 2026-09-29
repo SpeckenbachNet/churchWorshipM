@@ -135,6 +135,27 @@ QString SongPart::label() const
     return number > 0 ? QStringLiteral("%1 %2").arg(name).arg(number) : name;
 }
 
+QString SongPart::idPrefix(Kind kind)
+{
+    return QLatin1String(kindInfo(kind).prefix);
+}
+
+QColor SongPart::color(Kind kind)
+{
+    switch (kind) {
+    case Verse:     return QColor(0x3b, 0x82, 0xf6);   // blue
+    case PreChorus: return QColor(0xd9, 0x77, 0x06);   // amber
+    case Chorus:    return QColor(0xea, 0x58, 0x0c);   // orange
+    case Bridge:    return QColor(0x8b, 0x5c, 0xf6);   // violet
+    case Tag:       return QColor(0x0d, 0x94, 0x88);   // teal
+    case Intro:
+    case Interlude:
+    case Ending:    return QColor(0x16, 0xa3, 0x4a);   // green
+    case Other:     break;
+    }
+    return QColor(0x6b, 0x72, 0x80);   // gray
+}
+
 QJsonObject SongPart::toJson() const
 {
     QJsonObject o{{"id", id}, {"kind", QLatin1String(kindInfo(kind).key)}, {"text", text}};
@@ -184,18 +205,41 @@ QList<SongPart> Song::arrangedParts(const QStringList &orderOverride) const
     return result;
 }
 
-QString Song::slideText(const QStringList &orderOverride) const
+namespace {
+
+// Slides of one part: a line "---" splits, and so does an empty line (like the text slides)
+QStringList partSlides(const QString &text)
 {
-    static const QRegularExpression split(QStringLiteral(R"(\n\s*-{3,}\s*(\n|$))"));
+    static const QRegularExpression split(QStringLiteral(R"(\n\s*-{3,}\s*(\n|$)|\n\s*\n)"));
     QStringList slides;
-    for (const SongPart &part : arrangedParts(orderOverride)) {
-        for (const QString &slide : part.text.split(split, Qt::SkipEmptyParts)) {
-            if (!slide.trimmed().isEmpty()) {
-                slides << slide.trimmed();
-            }
+    for (const QString &slide : text.split(split, Qt::SkipEmptyParts)) {
+        if (!slide.trimmed().isEmpty()) {
+            slides << slide.trimmed();
         }
     }
+    return slides;
+}
+
+} // namespace
+
+QString Song::slideText(const QStringList &orderOverride) const
+{
+    QStringList slides;
+    for (const SongPart &part : arrangedParts(orderOverride)) {
+        slides << partSlides(part.text);
+    }
     return slides.join(QLatin1String("\n\n"));
+}
+
+QList<SongPart> Song::slideParts(const QStringList &orderOverride) const
+{
+    QList<SongPart> result;
+    for (const SongPart &part : arrangedParts(orderOverride)) {
+        for (qsizetype i = partSlides(part.text).size(); i > 0; --i) {
+            result << part;
+        }
+    }
+    return result;
 }
 
 QString Song::allText() const

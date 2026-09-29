@@ -40,7 +40,8 @@ enum Role {
     SourceRole,                   // local file path (file based types) or URL (YouTube)
     TextRole,                     // slide text (text based types)
     BibleRole,                    // QJsonObject of a BiblePassage (bible entries chosen on the bible page)
-    LibraryRole                   // id of the media library entry (file based types)
+    LibraryRole,                  // id of the media library entry (file based types)
+    SongRole                      // QJsonObject {id, order} of a song from the song library
 };
 
 Type    typeFromFile(const QString &path);

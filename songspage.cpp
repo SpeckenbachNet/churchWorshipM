@@ -16,6 +16,7 @@
  */
 #include "songspage.h"
 #include "searchfield.h"
+#include "songeditor.h"
 #include "songstore.h"
 
 #include <QDragEnterEvent>
@@ -80,6 +81,8 @@ SongsPage::SongsPage(QWidget *parent)
     connect(m_tree, &QTreeWidget::itemActivated, this, [this] {
         if (m_pick) {
             emit pickRequested();
+        } else {
+            editSelected();
         }
     });
 }
@@ -238,6 +241,31 @@ void SongsPage::removeSelected()
     }
     for (const QString &id : ids) {
         m_store->remove(id);
+    }
+}
+
+void SongsPage::newSong()
+{
+    SongEditorDialog dlg(Song(), {}, SongEditorDialog::Library, this);
+    if (dlg.exec() != QDialog::Accepted) {
+        return;
+    }
+    const QString id = m_store->add(dlg.song());
+    m_search->clear();
+    m_tree->clearSelection();
+    selectIds({id});
+}
+
+void SongsPage::editSelected()
+{
+    const QStringList ids = selectedIds();
+    const Song song = ids.isEmpty() ? Song() : m_store->song(ids.first());
+    if (!song.isValid()) {
+        return;
+    }
+    SongEditorDialog dlg(song, {}, SongEditorDialog::Library, this);
+    if (dlg.exec() == QDialog::Accepted) {
+        m_store->update(dlg.song());
     }
 }
 

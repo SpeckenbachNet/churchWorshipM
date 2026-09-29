@@ -10,6 +10,7 @@
 
 #include "mediaitem.h"
 #include "slidedeck.h"
+#include "song.h"
 
 class BeamerWindow;
 class QListWidgetItem;
@@ -18,6 +19,7 @@ class PresentationConverter;
 class MediaLibrary;
 class EventStore;
 class EventHeader;
+class SongStore;
 class QJsonObject;
 class QShortcut;
 
@@ -64,6 +66,14 @@ private:
     // --- Bible page
     void openBiblePage(QListWidgetItem *editItem);   // nullptr = new entry
     void applyBiblePassage();
+
+    // --- Song library page
+    void openSongsPage(bool pick);     // pick = choose songs for the playlist
+    void applySongSelection();
+    QString songCredits(const QListWidgetItem *item) const;   // copyright lines for the first slide
+    bool refreshSongEntry(QListWidgetItem *item);   // lyrics from the library, true if changed
+    QList<SongPart> songSlideParts(const QListWidgetItem *item) const;   // empty if unknown
+    void editSongEntry(QListWidgetItem *item);
 
     // --- Media library page
     void openLibraryPage(bool pick);   // pick = choose entries for the playlist
@@ -124,6 +134,14 @@ private:
     QToolButton *m_libraryRemoveBtn = nullptr;
     QToolButton *m_libraryApplyBtn = nullptr;
 
+    QToolButton *m_songsBtn = nullptr;          // presenter toolbar
+    QToolButton *m_songsBackBtn = nullptr;      // songs toolbar
+    QToolButton *m_songsNewBtn = nullptr;
+    QToolButton *m_songsEditBtn = nullptr;
+    QToolButton *m_songsImportBtn = nullptr;
+    QToolButton *m_songsRemoveBtn = nullptr;
+    QToolButton *m_songsApplyBtn = nullptr;
+
     QToolButton *m_eventsBackBtn = nullptr;     // events toolbar
     QToolButton *m_eventsNewBtn = nullptr;
     QToolButton *m_eventsEditBtn = nullptr;
@@ -148,6 +166,7 @@ private:
     PresentationConverter *m_converter = nullptr;
     MediaLibrary          *m_library = nullptr;
     EventStore            *m_events = nullptr;
+    SongStore             *m_songs = nullptr;
     EventHeader           *m_eventHeader = nullptr;
 
     QString m_eventId;                   // open event (empty = none)

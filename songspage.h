@@ -44,6 +44,8 @@ public:
     void importFiles();
     void importPaths(const QStringList &paths);
     void removeSelected();
+    void newSong();
+    void editSelected();
 
 signals:
     void selectionChanged();
