@@ -60,5 +60,6 @@ compile_commands.json
 
 *_qmlcache.qrc
 
+.DS_Store
 _dev/
 _backup/
