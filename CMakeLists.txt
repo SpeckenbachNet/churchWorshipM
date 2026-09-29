@@ -17,8 +17,10 @@ set(CMAKE_AUTORCC ON)
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
-find_package(QT NAMES Qt6 Qt5 REQUIRED COMPONENTS Widgets LinguistTools)
-find_package(Qt${QT_VERSION_MAJOR} REQUIRED COMPONENTS Widgets LinguistTools)
+find_package(QT NAMES Qt6 Qt5 REQUIRED COMPONENTS Widgets Pdf Network WebEngineWidgets Sql LinguistTools)
+find_package(Qt${QT_VERSION_MAJOR} REQUIRED COMPONENTS Widgets Pdf Network WebEngineWidgets Sql LinguistTools)
+# QZipReader (SWORD import) is private Qt API
+find_package(Qt${QT_VERSION_MAJOR} REQUIRED COMPONENTS CorePrivate)
 
 set(TS_FILES
     i18n/${PROJECT_NAME}_en.ts
@@ -32,16 +34,53 @@ set(PROJECT_SOURCES
         mainwin.ui
 )
 
-set(QM_OUTPUT_DIR "${CMAKE_CURRENT_SOURCE_DIR}/i18n")
 
 if(${QT_VERSION_MAJOR} GREATER_EQUAL 6)
     qt_add_executable(${PROJECT_NAME}
         MANUAL_FINALIZATION
         ${PROJECT_SOURCES}
-        translation.qrc
         icons.qrc
         toolbarm.h
         toolbarm.cpp
+        mediaitem.h
+        mediaitem.cpp
+        playlistdelegate.h
+        playlistdelegate.cpp
+        slidedeck.h
+        slidedeck.cpp
+        beamerwindow.h
+        beamerwindow.cpp
+        textslidedialog.h
+        textslidedialog.cpp
+        presentationconverter.h
+        presentationconverter.cpp
+        biblebooks.h
+        biblebooks.cpp
+        biblestore.h
+        biblestore.cpp
+        swordimporter.h
+        swordimporter.cpp
+        bibleimporter.h
+        bibleimporter.cpp
+        biblecatalog.h
+        biblecatalog.cpp
+        bibleinstaller.h
+        bibleinstaller.cpp
+        biblesettingspage.h
+        biblesettingspage.cpp
+        settingspage.h
+        settingspage.cpp
+        biblepassage.h
+        biblepassage.cpp
+        biblepage.h
+        biblepage.cpp
+        flowlayout.h
+        flowlayout.cpp
+        medialibrary.h
+        medialibrary.cpp
+        librarypage.h
+        librarypage.cpp
+        data.qrc
     )
 
 target_include_directories(${PROJECT_NAME}
@@ -61,9 +100,11 @@ target_compile_definitions(${PROJECT_NAME}
 #                 ${CMAKE_CURRENT_SOURCE_DIR}/android)
 # For more information, see https://doc.qt.io/qt-6/qt-add-executable.html#target-creation
 
+# The .qm files are compiled and embedded into the app as :/i18n/<name>.qm
+# ("update_translations" target: collects all tr() texts into the .ts files)
 qt_add_translations(${PROJECT_NAME}
     TS_FILES ${TS_FILES}
-    QM_OUTPUT_DIRECTORY "${QM_OUTPUT_DIR}"
+    RESOURCE_PREFIX "/i18n"
 )
 else()
     if(ANDROID)
@@ -81,7 +122,13 @@ else()
     qt5_create_translation(QM_FILES ${CMAKE_SOURCE_DIR} ${TS_FILES})
 endif()
 
-target_link_libraries(${PROJECT_NAME} PRIVATE Qt${QT_VERSION_MAJOR}::Widgets)
+target_link_libraries(${PROJECT_NAME} PRIVATE Qt${QT_VERSION_MAJOR}::Widgets
+    Qt${QT_VERSION_MAJOR}::Pdf
+    Qt${QT_VERSION_MAJOR}::Network
+    Qt${QT_VERSION_MAJOR}::WebEngineWidgets
+    Qt${QT_VERSION_MAJOR}::Sql
+    Qt${QT_VERSION_MAJOR}::CorePrivate
+)
 
 # Qt for iOS sets MACOSX_BUNDLE_GUI_IDENTIFIER automatically since Qt 6.1.
 # If you are developing for iOS or macOS you should consider setting an

@@ -171,7 +171,7 @@ void ToolbarM::paintButton(QToolButton *btn)
     const bool useSeparator = btn->property("useSeparator").toBool();
     const bool iconRight    = btn->property("iconRight").toBool();
     const bool isEnabled    = btn->isEnabled();
-    const bool isPressed    = btn->isDown();
+    const bool isPressed    = btn->isDown() || btn->isChecked();  // checkable buttons stay "pressed"
     const bool isHovered    = btn->underMouse();
 
     // --- 1. Colors: everything derived from button + text color -> visible in every theme

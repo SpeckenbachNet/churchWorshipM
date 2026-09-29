@@ -5,5 +5,22 @@
         <file alias="upload">ressources/icons/upload.svg</file>
         <file alias="refresh">ressources/icons/refresh.svg</file>
         <file alias="help">ressources/icons/help.svg</file>
+        <file alias="new">ressources/icons/new.svg</file>
+        <file alias="open">ressources/icons/folder_open.svg</file>
+        <file alias="save">ressources/icons/save.svg</file>
+        <file alias="monitor">ressources/icons/monitor.svg</file>
+        <file alias="black_screen">ressources/icons/black_screen.svg</file>
+        <file alias="add">ressources/icons/add.svg</file>
+        <file alias="edit">ressources/icons/edit.svg</file>
+        <file alias="remove">ressources/icons/remove.svg</file>
+        <file alias="arrow_up">ressources/icons/arrow_up.svg</file>
+        <file alias="arrow_down">ressources/icons/arrow_down.svg</file>
+        <file alias="play">ressources/icons/play.svg</file>
+        <file alias="pause">ressources/icons/pause.svg</file>
+        <file alias="stop">ressources/icons/stop.svg</file>
+        <file alias="download">ressources/icons/download.svg</file>
+        <file alias="back">ressources/icons/back.svg</file>
+        <file alias="check">ressources/icons/check.svg</file>
+        <file alias="library">ressources/icons/library.svg</file>
     </qresource>
 </RCC>

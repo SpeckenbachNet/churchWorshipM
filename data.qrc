@@ -1,0 +1,5 @@
+<RCC>
+    <qresource prefix="/bible">
+        <file alias="versifications.json">ressources/bible/versifications.json</file>
+    </qresource>
+</RCC>
