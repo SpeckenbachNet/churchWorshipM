@@ -22,5 +22,15 @@
         <file alias="back">ressources/icons/back.svg</file>
         <file alias="check">ressources/icons/check.svg</file>
         <file alias="library">ressources/icons/library.svg</file>
+        <file alias="calendar">ressources/icons/calendar.svg</file>
+        <file alias="calendar_event_new">ressources/icons/calendar_event_new.svg</file>
+        <file alias="search">ressources/icons/search.svg</file>
+        <file alias="type_image">ressources/icons/type_image.svg</file>
+        <file alias="type_pdf">ressources/icons/type_pdf.svg</file>
+        <file alias="type_presentation">ressources/icons/type_presentation.svg</file>
+        <file alias="type_song">ressources/icons/type_song.svg</file>
+        <file alias="type_bible">ressources/icons/type_bible.svg</file>
+        <file alias="type_custom">ressources/icons/type_custom.svg</file>
+        <file alias="type_youtube">ressources/icons/type_youtube.svg</file>
     </qresource>
 </RCC>

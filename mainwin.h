@@ -16,6 +16,9 @@ class QListWidgetItem;
 class QNetworkAccessManager;
 class PresentationConverter;
 class MediaLibrary;
+class EventStore;
+class EventHeader;
+class QJsonObject;
 class QShortcut;
 
 QT_BEGIN_NAMESPACE
@@ -44,16 +47,17 @@ private:
     void initializeConnections();
     void initializeShortcuts();
 
-    // --- Playlist (one per event)
-    void newPlaylist();
-    void openPlaylist();
-    bool savePlaylist();
-    bool savePlaylistAs();
-    bool loadPlaylistFile(const QString &path);
-    bool writePlaylistFile(const QString &path);
-    bool maybeSave();
-    void setModified(bool modified);
-    void updateWindowTitle();
+    // --- Events (the playlist belongs to the open event and is saved automatically)
+    void openEventsPage();
+    void openStartEvent();             // at program start: last / next upcoming event
+    void loadEvent(const QString &id); // empty = no event open
+    void scheduleSave();               // every change of the playlist
+    void saveEvent();                  // writes a pending change right now
+    void onEventsChanged();            // open event renamed or deleted
+    QJsonObject entryToJson(const QListWidgetItem *item) const;
+    QListWidgetItem *entryFromJson(const QJsonObject &o);
+    void updateEventHeader();
+    void editCurrentEvent();
     void updateButtonStates();   // enables only buttons that can do something right now
     void showPage(QWidget *page);   // switches the stacked widget (presentation, settings, bible)
 
@@ -95,7 +99,6 @@ private:
 
     QToolButton *m_newBtn = nullptr;
     QToolButton *m_openBtn = nullptr;
-    QToolButton *m_saveBtn = nullptr;
     QToolButton *m_beamerBtn = nullptr;
     QToolButton *m_blackBtn = nullptr;
     QToolButton *m_settingsBtn = nullptr;
@@ -121,6 +124,14 @@ private:
     QToolButton *m_libraryRemoveBtn = nullptr;
     QToolButton *m_libraryApplyBtn = nullptr;
 
+    QToolButton *m_eventsBackBtn = nullptr;     // events toolbar
+    QToolButton *m_eventsNewBtn = nullptr;
+    QToolButton *m_eventsEditBtn = nullptr;
+    QToolButton *m_eventsRemoveBtn = nullptr;
+    QToolButton *m_eventsImportBtn = nullptr;
+    QToolButton *m_eventsExportBtn = nullptr;
+    QToolButton *m_eventsOpenBtn = nullptr;
+
     QToolButton *m_playBtn = nullptr;
     QToolButton *m_pauseBtn = nullptr;
     QToolButton *m_stopBtn = nullptr;
@@ -136,10 +147,13 @@ private:
     QNetworkAccessManager *m_network = nullptr;
     PresentationConverter *m_converter = nullptr;
     MediaLibrary          *m_library = nullptr;
+    EventStore            *m_events = nullptr;
+    EventHeader           *m_eventHeader = nullptr;
 
-    QString m_playlistPath;
-    bool    m_modified = false;
-    bool    m_loading  = false;          // suppresses the modified flag while a playlist is loaded
+    QString m_eventId;                   // open event (empty = none)
+    bool    m_loading  = false;          // suppresses saving while a playlist is loaded
+    bool    m_unsaved  = false;          // playlist changed since the last save
+    QTimer  m_saveTimer;                 // collects the changes of one user action into one save
 
     QList<QShortcut *> m_presenterShortcuts;   // only active on the presentation page
 

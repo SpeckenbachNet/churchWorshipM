@@ -8,6 +8,10 @@
 #include "biblepage.h"
 #include "librarypage.h"
 #include "medialibrary.h"
+#include "eventspage.h"
+#include "eventstore.h"
+#include "eventheader.h"
+#include "eventdialog.h"
 
 #include <QCloseEvent>
 #include <QFileDialog>
@@ -21,12 +25,10 @@
 #include <QNetworkAccessManager>
 #include <QNetworkReply>
 #include <QUrlQuery>
-#include <QSaveFile>
 #include <QShortcut>
 
 namespace {
 constexpr QSize kThumbSize{160, 90};
-const char *kPlaylistFilter = QT_TRANSLATE_NOOP("MainWin", "Event playlist (*.cwm)");
 }
 
 MainWin::MainWin(QWidget *parent)
@@ -39,21 +41,23 @@ MainWin::MainWin(QWidget *parent)
     m_converter = new PresentationConverter(this);
     m_library = new MediaLibrary(m_converter, this);
     ui->libraryBrowser->setLibrary(m_library);
+    m_events = new EventStore(this);
+    ui->eventsBrowser->setStore(m_events);
 
     initializeForm();
     initializeConnections();
     initializeShortcuts();
-    updateWindowTitle();
-    updateButtonStates();
+    openStartEvent();
 }
 
 // ====== Initializing / Settings  ======
 
 void MainWin::initializeForm() {
     // --- Main toolbar
-    m_newBtn  = ui->presenterToolbar->addButton("newBtn",  tr("New"),  ":icons/new",  true);
-    m_openBtn = ui->presenterToolbar->addButton("openBtn", tr("Open"), ":icons/open", true);
-    m_saveBtn = ui->presenterToolbar->addButton("saveBtn", tr("Save"), ":icons/save", true);
+    m_newBtn  = ui->presenterToolbar->addButton("newBtn",  tr("New"),    ":icons/calendar_event_new",  true);
+    m_newBtn->setToolTip(tr("New event (Ctrl+N)"));
+    m_openBtn = ui->presenterToolbar->addButton("openBtn", tr("Events"), ":icons/calendar", true);
+    m_openBtn->setToolTip(tr("Open or manage events and templates (Ctrl+O)"));
 
     ui->presenterToolbar->addSpacer();
 
@@ -73,6 +77,10 @@ void MainWin::initializeForm() {
     m_settingsBtn->setToolTip(tr("Settings"));
     m_helpBtn = ui->presenterToolbar->addButton("helpBtn", "", ":icons/help");
     m_helpBtn->setEnabled(false);
+
+    // --- Header of the open event above the playlist
+    m_eventHeader = new EventHeader(ui->leftPanel);
+    ui->leftPanelLayout->insertWidget(0, m_eventHeader);
 
     // --- Settings toolbar
     m_backBtn = ui->settingsToolbar->addButton("backBtn", tr("Back"), ":icons/back", true);
@@ -97,6 +105,27 @@ void MainWin::initializeForm() {
     ui->libraryToolbar->addSpacer();
     m_libraryApplyBtn  = ui->libraryToolbar->addButton("libraryApplyBtn", tr("Apply"), ":icons/check", true);
     m_libraryApplyBtn->setToolTip(tr("Put the selected entries into the playlist"));
+
+    // --- Events toolbar
+    m_eventsBackBtn   = ui->eventsToolbar->addButton("eventsBackBtn", tr("Back"), ":icons/back", true);
+    m_eventsBackBtn->setToolTip(tr("Back to the presentation"));
+    m_eventsNewBtn    = ui->eventsToolbar->addButton("eventsNewBtn", tr("New"), ":icons/add", true);
+    m_eventsEditBtn   = ui->eventsToolbar->addButton("eventsEditBtn", tr("Properties"), ":icons/edit", true);
+    m_eventsEditBtn->setToolTip(tr("Name, date, time and note"));
+    m_eventsRemoveBtn = ui->eventsToolbar->addButton("eventsRemoveBtn", tr("Delete"), ":icons/remove", true);
+    m_eventsImportBtn = ui->eventsToolbar->addButton("eventsImportBtn", tr("Import"), ":icons/download", true);
+    m_eventsImportBtn->setToolTip(tr("Import events from files (*.cwm)"));
+    m_eventsExportBtn = ui->eventsToolbar->addButton("eventsExportBtn", tr("Export"), ":icons/upload", true);
+    m_eventsExportBtn->setToolTip(tr("Save the selected event as a file, e.g. for another computer"));
+    ui->eventsToolbar->addSpacer();
+    m_eventsOpenBtn   = ui->eventsToolbar->addButton("eventsOpenBtn", tr("Open"), ":icons/check", true);
+    m_eventsOpenBtn->setToolTip(tr("Open the selected event in the presentation"));
+
+    auto *newMenu = new QMenu(m_eventsNewBtn);
+    newMenu->addAction(tr("Event..."), ui->eventsBrowser, &EventsPage::newEvent);
+    newMenu->addAction(tr("Template..."), ui->eventsBrowser, &EventsPage::newTemplate);
+    m_eventsNewBtn->setMenu(newMenu);
+    m_eventsNewBtn->setPopupMode(QToolButton::InstantPopup);
 
     // --- Playlist toolbar
     m_addBtn    = ui->playlistToolbar->addButton("addBtn",    "", ":icons/add");
@@ -158,7 +187,6 @@ void MainWin::initializeForm() {
     slides->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
 
     ui->previewLabel->installEventFilter(this);
-    ui->previewLabel->setText(tr("Add files or text slides to the playlist."));
 
     ui->splitter->setStretchFactor(0, 0);
     ui->splitter->setStretchFactor(1, 1);
@@ -166,10 +194,41 @@ void MainWin::initializeForm() {
 
     m_previewTimer.setSingleShot(true);
     m_previewTimer.setInterval(60);
+    m_saveTimer.setSingleShot(true);
+    m_saveTimer.setInterval(200);
 }
 
 void MainWin::initializeConnections() {
-    connect(m_newBtn,  &QToolButton::clicked, this, &MainWin::newPlaylist);
+    connect(m_newBtn,  &QToolButton::clicked, ui->eventsBrowser, &EventsPage::newEvent);
+    connect(m_openBtn, &QToolButton::clicked, this, &MainWin::openEventsPage);
+    connect(m_eventsBackBtn,   &QToolButton::clicked, this, [this] { showPage(ui->presenterPage); });
+    connect(m_eventsEditBtn,   &QToolButton::clicked, ui->eventsBrowser, &EventsPage::editSelected);
+    connect(m_eventsRemoveBtn, &QToolButton::clicked, ui->eventsBrowser, &EventsPage::removeSelected);
+    connect(m_eventsImportBtn, &QToolButton::clicked, ui->eventsBrowser, &EventsPage::importFiles);
+    connect(m_eventsExportBtn, &QToolButton::clicked, ui->eventsBrowser, &EventsPage::exportSelected);
+    connect(m_eventsOpenBtn,   &QToolButton::clicked, this, [this] {
+        const QString id = ui->eventsBrowser->selectedId();
+        if (!id.isEmpty()) {
+            loadEvent(id);
+            showPage(ui->presenterPage);
+        }
+    });
+    connect(ui->eventsBrowser, &EventsPage::selectionChanged, this, &MainWin::updateButtonStates);
+    connect(ui->eventsBrowser, &EventsPage::openRequested, this, [this](const QString &id) {
+        loadEvent(id);
+        showPage(ui->presenterPage);
+    });
+    connect(m_events, &EventStore::changed, this, &MainWin::onEventsChanged);
+    connect(m_eventHeader, &EventHeader::clicked, this, &MainWin::editCurrentEvent);
+    // Context and data only from header and model: the list clears itself while the window
+    // is destroyed, when `ui` is already gone
+    QAbstractItemModel *playlistModel = ui->playlistWidget->model();
+    EventHeader *header = m_eventHeader;
+    const auto updateCount = [header, playlistModel] { header->setEntryCount(playlistModel->rowCount()); };
+    connect(playlistModel, &QAbstractItemModel::rowsInserted, header, updateCount);
+    connect(playlistModel, &QAbstractItemModel::rowsRemoved,  header, updateCount);
+    connect(playlistModel, &QAbstractItemModel::modelReset,   header, updateCount);
+    connect(&m_saveTimer, &QTimer::timeout, this, &MainWin::saveEvent);
     connect(m_settingsBtn, &QToolButton::clicked, this, [this] { showPage(ui->settingsPage); });
     connect(m_backBtn,     &QToolButton::clicked, this, [this] { showPage(ui->presenterPage); });
     connect(m_bibleBackBtn,  &QToolButton::clicked, this, [this] { showPage(ui->presenterPage); });
@@ -185,8 +244,6 @@ void MainWin::initializeConnections() {
     connect(m_bibleApplyBtn, &QToolButton::clicked, this, &MainWin::applyBiblePassage);
     connect(ui->bibleBrowser, &BiblePage::selectionChanged, this, &MainWin::updateButtonStates);
     connect(ui->bibleBrowser, &BiblePage::settingsRequested, this, [this] { showPage(ui->settingsPage); });
-    connect(m_openBtn, &QToolButton::clicked, this, &MainWin::openPlaylist);
-    connect(m_saveBtn, &QToolButton::clicked, this, &MainWin::savePlaylist);
     connect(m_beamerBtn, &QToolButton::toggled, this, &MainWin::setBeamerVisible);
     connect(m_blackBtn,  &QToolButton::toggled, this, &MainWin::setBlack);
 
@@ -204,13 +261,12 @@ void MainWin::initializeConnections() {
     connect(ui->playlistWidget, &QListWidget::itemDoubleClicked, this, &MainWin::editEntry);
     connect(ui->slidesListWidget, &QListWidget::currentRowChanged, this, &MainWin::showSlide);
 
-    // Every change of the playlist model marks the event as modified (incl. drag & drop)
+    // Every change of the playlist model is saved automatically (incl. drag & drop)
     QAbstractItemModel *model = ui->playlistWidget->model();
-    auto markModified = [this] { if (!m_loading) setModified(true); };
-    connect(model, &QAbstractItemModel::rowsInserted, this, markModified);
-    connect(model, &QAbstractItemModel::rowsRemoved,  this, markModified);
-    connect(model, &QAbstractItemModel::rowsMoved,    this, markModified);
-    connect(model, &QAbstractItemModel::dataChanged,  this, markModified);
+    connect(model, &QAbstractItemModel::rowsInserted, this, &MainWin::scheduleSave);
+    connect(model, &QAbstractItemModel::rowsRemoved,  this, &MainWin::scheduleSave);
+    connect(model, &QAbstractItemModel::rowsMoved,    this, &MainWin::scheduleSave);
+    connect(model, &QAbstractItemModel::dataChanged,  this, &MainWin::scheduleSave);
 
     // Presentation converted in the background -> show it if it is still the current entry
     connect(m_converter, &PresentationConverter::finished, this,
@@ -250,9 +306,8 @@ void MainWin::initializeShortcuts() {
     presenterShortcut(Qt::Key_PageDown, this, &MainWin::nextSlide);
     presenterShortcut(Qt::Key_Left,     this, &MainWin::previousSlide);
     presenterShortcut(Qt::Key_PageUp,   this, &MainWin::previousSlide);
-    presenterShortcut(QKeySequence::Save, this, &MainWin::savePlaylist);
-    presenterShortcut(QKeySequence::Open, this, &MainWin::openPlaylist);
-    presenterShortcut(QKeySequence::New,  this, &MainWin::newPlaylist);
+    presenterShortcut(QKeySequence::Open, this, &MainWin::openEventsPage);
+    presenterShortcut(QKeySequence::New,  this, [this] { ui->eventsBrowser->newEvent(); });
     presenterShortcut(QKeySequence::Delete, ui->playlistWidget, &MainWin::removeSelected);
 
     // Projector control works everywhere, also while the settings are open
@@ -430,147 +485,127 @@ void MainWin::moveSelected(int delta) {
     const QSignalBlocker blocker(list);
     list->insertItem(target, list->takeItem(row));
     list->setCurrentRow(target);
-    setModified(true);
+    updateButtonStates();
 }
 
-void MainWin::newPlaylist() {
-    if (!maybeSave()) {
-        return;
-    }
-    m_loading = true;
-    ui->playlistWidget->clear();
-    m_loading = false;
-    m_playlistPath.clear();
-    setModified(false);
+// ====== Event management ======
+
+void MainWin::openEventsPage() {
+    saveEvent();   // the list shows the current number of entries
+    ui->eventsBrowser->setCurrentId(m_eventId);
+    showPage(ui->eventsPage);
 }
 
-void MainWin::openPlaylist() {
-    if (!maybeSave()) {
-        return;
+void MainWin::openStartEvent() {
+    // The last opened event, unless it is over and a newer one has been planned since
+    EventInfo e = m_events->event(settings.value("lastEvent").toString());
+    if (!e.isValid() || e.isPast()) {
+        const EventInfo next = m_events->nextUpcoming();
+        if (next.isValid()) {
+            e = next;
+        }
     }
-    const QString path = QFileDialog::getOpenFileName(
-        this, tr("Open event"), settings.value("lastPlaylistDir").toString(), tr(kPlaylistFilter));
-    if (!path.isEmpty()) {
-        loadPlaylistFile(path);
-    }
+    loadEvent(e.id);   // none yet: the presentation page shows a hint to create one
 }
 
-bool MainWin::savePlaylist() {
-    return m_playlistPath.isEmpty() ? savePlaylistAs() : writePlaylistFile(m_playlistPath);
-}
-
-bool MainWin::savePlaylistAs() {
-    QString path = QFileDialog::getSaveFileName(
-        this, tr("Save event"), settings.value("lastPlaylistDir").toString(), tr(kPlaylistFilter));
-    if (path.isEmpty()) {
-        return false;
-    }
-    if (QFileInfo(path).suffix().isEmpty()) {
-        path += ".cwm";
-    }
-    return writePlaylistFile(path);
-}
-
-bool MainWin::loadPlaylistFile(const QString &path) {
-    QFile file(path);
-    if (!file.open(QIODevice::ReadOnly)) {
-        QMessageBox::warning(this, tr("Open event"), tr("Cannot open %1.").arg(path));
-        return false;
-    }
-    const QJsonObject root = QJsonDocument::fromJson(file.readAll()).object();
+void MainWin::loadEvent(const QString &id) {
+    saveEvent();   // pending changes belong to the previous event
 
     m_loading = true;
     ui->playlistWidget->clear();
-    for (const QJsonValue &v : root.value("items").toArray()) {
-        const QJsonObject o = v.toObject();
-        QListWidgetItem *item = createEntry(o.value("title").toString(),
-                                            MediaItem::typeFromKey(o.value("type").toString()),
-                                            o.value("source").toString(),
-                                            o.value("text").toString());
-        if (o.contains("bible")) {
-            item->setData(MediaItem::BibleRole, o.value("bible").toObject());
-        }
-        // Library entries: the file location comes from the library ("source" is only a fallback)
-        const QString libraryId = o.value("library").toString();
-        if (!libraryId.isEmpty()) {
-            item->setData(MediaItem::LibraryRole, libraryId);
-            const LibraryEntry e = m_library->entry(libraryId);
-            if (e.isValid()) {
-                item->setData(MediaItem::SourceRole, e.path());
-            }
-        }
-        ui->playlistWidget->addItem(item);
+    m_eventId = m_events->event(id).isValid() ? id : QString();
+    for (const QJsonValue &v : m_events->items(m_eventId)) {
+        ui->playlistWidget->addItem(entryFromJson(v.toObject()));
     }
     m_loading = false;
     convertPresentations();
 
-    m_playlistPath = path;
-    settings.setValue("lastPlaylistDir", QFileInfo(path).absolutePath());
-    setModified(false);
+    if (!m_eventId.isEmpty()) {
+        settings.setValue("lastEvent", m_eventId);
+    }
+    ui->eventsBrowser->setCurrentId(m_eventId);
+    updateEventHeader();
+    updateButtonStates();
 
     if (ui->playlistWidget->count() > 0) {
         ui->playlistWidget->setCurrentRow(0);
+    } else {
+        showEntry(nullptr);
     }
-    return true;
 }
 
-bool MainWin::writePlaylistFile(const QString &path) {
+void MainWin::scheduleSave() {
+    if (!m_loading && !m_eventId.isEmpty()) {
+        m_unsaved = true;
+        m_saveTimer.start();
+    }
+}
+
+void MainWin::saveEvent() {
+    // Called by the timer and directly (switching events, closing): the flag, not the
+    // timer state, tells whether there is something to save
+    if (!m_unsaved) {
+        return;
+    }
+    m_unsaved = false;
+    m_saveTimer.stop();
+
     QJsonArray items;
     for (int i = 0; i < ui->playlistWidget->count(); ++i) {
-        const QListWidgetItem *item = ui->playlistWidget->item(i);
-        const auto type = MediaItem::Type(item->data(MediaItem::TypeRole).toInt());
-        QJsonObject o{{"title", item->text()}, {"type", MediaItem::typeKey(type)}};
-        if (MediaItem::isTextType(type)) {
-            o.insert("text", item->data(MediaItem::TextRole).toString());
-            const QJsonObject bible = item->data(MediaItem::BibleRole).toJsonObject();
-            if (!bible.isEmpty()) {
-                o.insert("bible", bible);
-            }
-        } else {
-            o.insert("source", item->data(MediaItem::SourceRole).toString());
-            const QString libraryId = item->data(MediaItem::LibraryRole).toString();
-            if (!libraryId.isEmpty()) {
-                o.insert("library", libraryId);
-            }
+        items.append(entryToJson(ui->playlistWidget->item(i)));
+    }
+    if (!m_events->setItems(m_eventId, items)) {
+        QMessageBox::warning(this, tr("Save event"), tr("The changes of the event could not be saved."));
+    }
+}
+
+void MainWin::onEventsChanged() {
+    if (!m_eventId.isEmpty() && !m_events->event(m_eventId).isValid()) {
+        m_unsaved = false;    // deleted: nothing to save anymore
+        m_saveTimer.stop();
+        loadEvent({});
+        return;
+    }
+    updateEventHeader();   // may have been renamed
+}
+
+QJsonObject MainWin::entryToJson(const QListWidgetItem *item) const {
+    const auto type = MediaItem::Type(item->data(MediaItem::TypeRole).toInt());
+    QJsonObject o{{"title", item->text()}, {"type", MediaItem::typeKey(type)}};
+    if (MediaItem::isTextType(type)) {
+        o.insert("text", item->data(MediaItem::TextRole).toString());
+        const QJsonObject bible = item->data(MediaItem::BibleRole).toJsonObject();
+        if (!bible.isEmpty()) {
+            o.insert("bible", bible);
         }
-        items.append(o);
+    } else {
+        o.insert("source", item->data(MediaItem::SourceRole).toString());
+        const QString libraryId = item->data(MediaItem::LibraryRole).toString();
+        if (!libraryId.isEmpty()) {
+            o.insert("library", libraryId);
+        }
     }
-    const QJsonObject root{{"version", 1}, {"items", items}};
-
-    QSaveFile file(path);
-    if (!file.open(QIODevice::WriteOnly)) {
-        QMessageBox::warning(this, tr("Save event"), tr("Cannot write %1.").arg(path));
-        return false;
-    }
-    file.write(QJsonDocument(root).toJson());
-    if (!file.commit()) {
-        QMessageBox::warning(this, tr("Save event"), tr("Cannot write %1.").arg(path));
-        return false;
-    }
-
-    m_playlistPath = path;
-    settings.setValue("lastPlaylistDir", QFileInfo(path).absolutePath());
-    setModified(false);
-    return true;
+    return o;
 }
 
-bool MainWin::maybeSave() {
-    if (!m_modified) {
-        return true;
+QListWidgetItem *MainWin::entryFromJson(const QJsonObject &o) {
+    QListWidgetItem *item = createEntry(o.value("title").toString(),
+                                        MediaItem::typeFromKey(o.value("type").toString()),
+                                        o.value("source").toString(),
+                                        o.value("text").toString());
+    if (o.contains("bible")) {
+        item->setData(MediaItem::BibleRole, o.value("bible").toObject());
     }
-    const auto answer = QMessageBox::question(
-        this, tr("Unsaved changes"), tr("The event has been modified. Save changes?"),
-        QMessageBox::Save | QMessageBox::Discard | QMessageBox::Cancel);
-    if (answer == QMessageBox::Save) {
-        return savePlaylist();
+    // Library entries: the file location comes from the library ("source" is only a fallback)
+    const QString libraryId = o.value("library").toString();
+    if (!libraryId.isEmpty()) {
+        item->setData(MediaItem::LibraryRole, libraryId);
+        const LibraryEntry e = m_library->entry(libraryId);
+        if (e.isValid()) {
+            item->setData(MediaItem::SourceRole, e.path());
+        }
     }
-    return answer == QMessageBox::Discard;
-}
-
-void MainWin::setModified(bool modified) {
-    m_modified = modified;
-    updateWindowTitle();
-    updateButtonStates();
+    return item;
 }
 
 void MainWin::updateButtonStates() {
@@ -578,10 +613,9 @@ void MainWin::updateButtonStates() {
     const int count = ui->playlistWidget->count();
     const bool hasEntry = row >= 0;
 
-    m_newBtn->setEnabled(count > 0 || !m_playlistPath.isEmpty());
-    m_saveBtn->setEnabled(m_modified);
     m_blackBtn->setEnabled(m_beamerBtn->isChecked());
 
+    m_addBtn->setEnabled(!m_eventId.isEmpty());   // entries always belong to an event
     m_editBtn->setEnabled(hasEntry);
     m_removeBtn->setEnabled(hasEntry);
     m_upBtn->setEnabled(row > 0);
@@ -593,12 +627,18 @@ void MainWin::updateButtonStates() {
     m_libraryUpdateBtn->setEnabled(ui->libraryBrowser->canUpdateSelection());
     m_libraryRemoveBtn->setEnabled(librarySelection);
     m_libraryApplyBtn->setEnabled(librarySelection);
+
+    const bool eventSelection = !ui->eventsBrowser->selectedId().isEmpty();
+    m_eventsEditBtn->setEnabled(eventSelection);
+    m_eventsRemoveBtn->setEnabled(eventSelection);
+    m_eventsExportBtn->setEnabled(eventSelection);
+    m_eventsOpenBtn->setEnabled(eventSelection);
 }
 
 void MainWin::showPage(QWidget *page) {
     ui->mainStack->setCurrentWidget(page);
     const bool presenter = page == ui->presenterPage;
-    for (QShortcut *shortcut : m_presenterShortcuts) {
+    for (QShortcut *shortcut : std::as_const(m_presenterShortcuts)) {
         shortcut->setEnabled(presenter);
     }
     if (page != ui->biblePage) {
@@ -698,11 +738,22 @@ void MainWin::applyBiblePassage() {
     }
 }
 
-void MainWin::updateWindowTitle() {
-    const QString event = m_playlistPath.isEmpty() ? tr("New event")
-                                                   : QFileInfo(m_playlistPath).completeBaseName();
-    setWindowTitle(QStringLiteral("%1%2 – %3 %4").arg(event, m_modified ? "*" : "",
-                                                      APP_NAME, APP_VERSION));
+void MainWin::updateEventHeader() {
+    setWindowTitle(QStringLiteral("%1 %2").arg(APP_NAME, APP_VERSION));
+    m_eventHeader->setEvent(m_events->event(m_eventId));
+    m_eventHeader->setEntryCount(ui->playlistWidget->count());
+}
+
+void MainWin::editCurrentEvent() {
+    const EventInfo e = m_events->event(m_eventId);
+    if (!e.isValid()) {
+        openEventsPage();
+        return;
+    }
+    EventDialog dlg(e, {}, this);
+    if (dlg.exec() == QDialog::Accepted) {
+        m_events->update(dlg.info());
+    }
 }
 
 // ====== Slides ======
@@ -724,7 +775,8 @@ void MainWin::showEntry(QListWidgetItem *item) {
     ui->slidesListWidget->show();
 
     if (!item) {
-        ui->previewLabel->setText(tr("Add files or text slides to the playlist."));
+        ui->previewLabel->setText(m_eventId.isEmpty() ? tr("Create a new event or open one under \"Events\".")
+                                                      : tr("Add files or text slides to the playlist."));
         updateBeamer();
         return;
     }
@@ -880,10 +932,7 @@ void MainWin::resizeEvent(QResizeEvent *event) {
 }
 
 void MainWin::closeEvent(QCloseEvent *event) {
-    if (!maybeSave()) {
-        event->ignore();
-        return;
-    }
+    saveEvent();
     m_beamer->close();
     event->accept();
 }

@@ -33,8 +33,8 @@ public:
     // Central place to tune contrast of toolbar and buttons.
     struct ShadeFactors {
         qreal toolbarBackground = 0.00;  // toolbar fill
-        qreal toolbarDarkEdge   = 0.15;  // top/left edge
-        qreal toolbarLightEdge  = 0.05;  // bottom/right edge
+        qreal toolbarDarkEdge   = 0.20;  // top/left edge
+        qreal toolbarLightEdge  = 0.10;  // bottom/right edge
         qreal buttonHover       = 0.09;
         qreal buttonPressed     = 0.18;
         qreal buttonBorder      = 0.30;

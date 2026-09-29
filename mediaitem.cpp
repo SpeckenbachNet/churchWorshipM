@@ -18,9 +18,33 @@
 
 #include <QApplication>
 #include <QFileInfo>
+#include <QHash>
 #include <QMimeDatabase>
+#include <QPainter>
 #include <QRegularExpression>
 #include <QStyle>
+
+namespace {
+
+// Our SVG icons are black; recolor them with the text colors so they stay visible in dark mode
+QIcon tintedIcon(const QString &path)
+{
+    const QPixmap source = QIcon(path).pixmap(64, 64);
+    auto tinted = [&source](const QColor &color) {
+        QPixmap pm = source;
+        QPainter p(&pm);
+        p.setCompositionMode(QPainter::CompositionMode_SourceIn);
+        p.fillRect(pm.rect(), color);
+        return pm;
+    };
+    const QPalette palette = QApplication::palette();
+    QIcon icon;
+    icon.addPixmap(tinted(palette.color(QPalette::Text)), QIcon::Normal);
+    icon.addPixmap(tinted(palette.color(QPalette::HighlightedText)), QIcon::Selected);
+    return icon;
+}
+
+} // namespace
 
 namespace MediaItem {
 
@@ -59,19 +83,33 @@ QString typeName(Type type)
 
 QIcon typeIcon(Type type)
 {
-    // Theme icons first (Linux), style icons as fallback (Windows/macOS)
-    const QIcon fallback = QApplication::style()->standardIcon(QStyle::SP_FileIcon);
-    switch (type) {
-    case Image:      return QIcon::fromTheme("image-x-generic", fallback);
-    case Pdf:        return QIcon::fromTheme("application-pdf", fallback);
-    case PowerPoint: return QIcon::fromTheme("x-office-presentation", fallback);
-    case Song:       return QIcon::fromTheme("audio-x-generic", fallback);
-    case Bible:      return QIcon::fromTheme("accessories-dictionary", fallback);
-    case Custom:     return QIcon::fromTheme("text-x-generic", fallback);
-    case YouTube:    return QIcon::fromTheme("video-x-generic", fallback);
-    case Blank:      return QIcon::fromTheme("video-display", fallback);
-    default:         return fallback;
+    // Own symbols on every platform (theme icons exist only on Linux). Tinted once per
+    // palette and cached: the playlist asks for the icon on every paint.
+    static QHash<int, QIcon> cache;
+    static QRgb cachedColor = 0;
+    const QRgb color = QApplication::palette().color(QPalette::Text).rgba();
+    if (color != cachedColor) {
+        cache.clear();   // light <-> dark mode switched
+        cachedColor = color;
     }
+    auto it = cache.constFind(int(type));
+    if (it != cache.constEnd()) {
+        return *it;
+    }
+
+    QString path;
+    switch (type) {
+    case Image:      path = QStringLiteral(":icons/type_image"); break;
+    case Pdf:        path = QStringLiteral(":icons/type_pdf"); break;
+    case PowerPoint: path = QStringLiteral(":icons/type_presentation"); break;
+    case Song:       path = QStringLiteral(":icons/type_song"); break;
+    case Bible:      path = QStringLiteral(":icons/type_bible"); break;
+    case Custom:     path = QStringLiteral(":icons/type_custom"); break;
+    case YouTube:    path = QStringLiteral(":icons/type_youtube"); break;
+    case Blank:      path = QStringLiteral(":icons/black_screen"); break;   // same symbol as "Black"
+    default:         return QApplication::style()->standardIcon(QStyle::SP_FileIcon);
+    }
+    return cache.insert(int(type), tintedIcon(path)).value();
 }
 
 QString typeKey(Type type)

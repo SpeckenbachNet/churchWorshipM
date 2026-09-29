@@ -16,6 +16,7 @@
  */
 #include "librarypage.h"
 #include "medialibrary.h"
+#include "searchfield.h"
 
 #include <QApplication>
 #include <QComboBox>
@@ -127,9 +128,7 @@ private:
 LibraryPage::LibraryPage(QWidget *parent)
     : QWidget(parent)
 {
-    m_search = new QLineEdit(this);
-    m_search->setPlaceholderText(tr("Search..."));
-    m_search->setClearButtonEnabled(true);
+    m_search = new SearchField(this);
 
     m_typeFilter = new QComboBox(this);
     m_typeFilter->addItem(tr("All types"), int(MediaItem::Unknown));

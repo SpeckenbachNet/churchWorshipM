@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.16)
 
-set(PROJECT_VERSION "0.1.0")
+set(PROJECT_VERSION "0.2.0")
 set(ORGANIZATION_NAME "SpeckenbachNet")
 set(ORGANIZATION_DOMAIN "net.speckenbach")
 
@@ -80,6 +80,20 @@ if(${QT_VERSION_MAJOR} GREATER_EQUAL 6)
         medialibrary.cpp
         librarypage.h
         librarypage.cpp
+        eventstore.h
+        eventstore.cpp
+        eventdialog.h
+        eventdialog.cpp
+        eventspage.h
+        eventspage.cpp
+        eventheader.h
+        eventheader.cpp
+        song.h
+        song.cpp
+        songstore.h
+        songstore.cpp
+        searchfield.h
+        searchfield.cpp
         data.qrc
     )
 
