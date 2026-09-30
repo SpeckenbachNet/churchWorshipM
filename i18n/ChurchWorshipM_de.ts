@@ -1171,6 +1171,11 @@ Bitte stelle sicher, dass eure Gemeinde diese Übersetzung nutzen darf (z. B. f�
         <translation>Füge Dateien oder Textfolien zur Playlist hinzu.</translation>
     </message>
     <message>
+        <location filename="../mainwin.cpp" line="1226"/>
+        <source>Black slide before the text</source>
+        <translation>Schwarze Folie vor dem Text</translation>
+    </message>
+    <message>
         <location filename="../mainwin.cpp" line="437"/>
         <location filename="../mainwin.cpp" line="444"/>
         <location filename="../mainwin.cpp" line="447"/>
@@ -1191,6 +1196,7 @@ Bitte stelle sicher, dass eure Gemeinde diese Übersetzung nutzen darf (z. B. f�
     </message>
     <message>
         <location filename="../mainwin.cpp" line="461"/>
+        <location filename="../mainwin.cpp" line="1221"/>
         <source>Blank</source>
         <translation>Leer</translation>
     </message>
@@ -1419,39 +1425,54 @@ Bitte PowerPoint, OnlyOffice oder LibreOffice installieren oder die Präsentatio
 <context>
     <name>SettingsPage</name>
     <message>
-        <location filename="../settingspage.cpp" line="32"/>
+        <location filename="../settingspage.cpp" line="33"/>
         <source>When files are added to the media library:</source>
         <translation>Wenn Dateien in die Mediathek aufgenommen werden:</translation>
     </message>
     <message>
-        <location filename="../settingspage.cpp" line="34"/>
+        <location filename="../settingspage.cpp" line="35"/>
         <source>Copy into the media library (recommended)</source>
         <translation>In die Mediathek kopieren (empfohlen)</translation>
     </message>
     <message>
-        <location filename="../settingspage.cpp" line="35"/>
+        <location filename="../settingspage.cpp" line="36"/>
         <source>The playlist keeps working even if the original is moved or the USB stick is missing. If the original changes, the media library offers to update the copy.</source>
         <translation>Der Ablauf funktioniert auch, wenn das Original verschoben wird oder der USB-Stick fehlt. Ändert sich das Original, bietet die Mediathek an, die Kopie zu aktualisieren.</translation>
     </message>
     <message>
-        <location filename="../settingspage.cpp" line="38"/>
+        <location filename="../settingspage.cpp" line="39"/>
         <source>Link only – the file stays where it is</source>
         <translation>Nur verknüpfen – die Datei bleibt, wo sie ist</translation>
     </message>
     <message>
-        <location filename="../settingspage.cpp" line="39"/>
+        <location filename="../settingspage.cpp" line="40"/>
         <source>Useful for a shared cloud folder: the newest version is always shown automatically. The file has to be available during the service.</source>
         <translation>Praktisch für einen gemeinsamen Cloud-Ordner: Es wird automatisch immer die neueste Fassung gezeigt. Die Datei muss während des Gottesdienstes erreichbar sein.</translation>
     </message>
     <message>
-        <location filename="../settingspage.cpp" line="71"/>
+        <location filename="../settingspage.cpp" line="68"/>
+        <source>Black slide at the beginning of songs, bible texts and own slides</source>
+        <translation>Schwarze Leerfolie am Anfang von Liedern, Bibeltexten und eigenen Folien</translation>
+    </message>
+    <message>
+        <location filename="../settingspage.cpp" line="70"/>
+        <source>Nothing is shown on the projector when the entry is chosen; the text appears with the next click.</source>
+        <translation>Beim Auswählen des Eintrags bleibt der Beamer schwarz; der Text erscheint mit dem nächsten Klick.</translation>
+    </message>
+    <message>
+        <location filename="../settingspage.cpp" line="95"/>
         <source>Bibles</source>
         <translation>Bibeln</translation>
     </message>
     <message>
-        <location filename="../settingspage.cpp" line="72"/>
+        <location filename="../settingspage.cpp" line="96"/>
         <source>Media library</source>
         <translation>Mediathek</translation>
+    </message>
+    <message>
+        <location filename="../settingspage.cpp" line="97"/>
+        <source>Slides</source>
+        <translation>Folien</translation>
     </message>
 </context>
 <context>
@@ -1462,17 +1483,17 @@ Bitte PowerPoint, OnlyOffice oder LibreOffice installieren oder die Präsentatio
         <translation>Die PDF-Datei konnte nicht geöffnet werden.</translation>
     </message>
     <message>
-        <location filename="../slidedeck.cpp" line="368"/>
+        <location filename="../slidedeck.cpp" line="402"/>
         <source>The image could not be loaded.</source>
         <translation>Das Bild konnte nicht geladen werden.</translation>
     </message>
     <message>
-        <location filename="../slidedeck.cpp" line="381"/>
+        <location filename="../slidedeck.cpp" line="415"/>
         <source>The presentation has not been converted yet.</source>
         <translation>Die Präsentation wurde noch nicht umgewandelt.</translation>
     </message>
     <message>
-        <location filename="../slidedeck.cpp" line="393"/>
+        <location filename="../slidedeck.cpp" line="427"/>
         <source>Unsupported file type.</source>
         <translation>Nicht unterstützter Dateityp.</translation>
     </message>

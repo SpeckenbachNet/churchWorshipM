@@ -331,7 +331,41 @@ private:
     QList<QList<int>>  m_pages;   // indexes into verses/texts per slide
 };
 
+// ---------------------------------------------------------------------------
+// Black slide in front of another deck
+// ---------------------------------------------------------------------------
+
+class LeadingBlankDeck : public SlideDeck {
+public:
+    explicit LeadingBlankDeck(std::unique_ptr<SlideDeck> deck) : m_deck(std::move(deck)) {}
+
+    int count() const override { return m_deck->count() + 1; }
+
+    QImage render(int index, const QSize &maxSize) override
+    {
+        if (index > 0) {
+            return m_deck->render(index - 1, maxSize);
+        }
+        // Same size as the text slides behind it: the preview does not jump
+        const QSize size = textSlideAspect.scaled(maxSize, Qt::KeepAspectRatio);
+        if (size.isEmpty()) {
+            return QImage();
+        }
+        QImage image(size, QImage::Format_RGB32);
+        image.fill(Qt::black);
+        return image;
+    }
+
+private:
+    std::unique_ptr<SlideDeck> m_deck;
+};
+
 } // namespace
+
+std::unique_ptr<SlideDeck> SlideDeck::withLeadingBlank(std::unique_ptr<SlideDeck> deck)
+{
+    return std::make_unique<LeadingBlankDeck>(std::move(deck));
+}
 
 void SlideDeck::setBackground(const SlideBackground &background)
 {

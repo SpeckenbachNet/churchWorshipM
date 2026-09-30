@@ -17,6 +17,7 @@
 #include "settingspage.h"
 #include "biblesettingspage.h"
 
+#include <QCheckBox>
 #include <QLabel>
 #include <QRadioButton>
 #include <QSettings>
@@ -61,6 +62,29 @@ QWidget *createLibraryTab(QWidget *parent)
     return tab;
 }
 
+QWidget *createSlidesTab(QWidget *parent)
+{
+    auto *tab = new QWidget(parent);
+    auto *leadingBlank = new QCheckBox(SettingsPage::tr("Black slide at the beginning of songs, bible texts "
+                                                        "and own slides"), tab);
+    auto *hint = new QLabel(SettingsPage::tr("Nothing is shown on the projector when the entry is chosen; "
+                                             "the text appears with the next click."), tab);
+    hint->setWordWrap(true);
+    hint->setEnabled(false);          // muted
+    hint->setContentsMargins(24, 0, 0, 8);
+
+    leadingBlank->setChecked(QSettings().value("slides/leadingBlank", true).toBool());
+    QObject::connect(leadingBlank, &QCheckBox::toggled, tab, [](bool checked) {
+        QSettings().setValue("slides/leadingBlank", checked);
+    });
+
+    auto *layout = new QVBoxLayout(tab);
+    layout->addWidget(leadingBlank);
+    layout->addWidget(hint);
+    layout->addStretch(1);
+    return tab;
+}
+
 } // namespace
 
 SettingsPage::SettingsPage(QWidget *parent)
@@ -70,6 +94,7 @@ SettingsPage::SettingsPage(QWidget *parent)
     m_biblePage = new BibleSettingsPage(m_tabs);
     m_tabs->addTab(m_biblePage, tr("Bibles"));
     m_tabs->addTab(createLibraryTab(m_tabs), tr("Media library"));
+    m_tabs->addTab(createSlidesTab(m_tabs), tr("Slides"));
 
     auto *layout = new QVBoxLayout(this);
     layout->setContentsMargins(0, 0, 0, 0);
