@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.16)
 
-set(PROJECT_VERSION "0.5.0")
+set(PROJECT_VERSION "0.6.0")
 set(ORGANIZATION_NAME "SpeckenbachNet")
 set(ORGANIZATION_DOMAIN "net.speckenbach")
 
@@ -100,6 +100,10 @@ if(${QT_VERSION_MAJOR} GREATER_EQUAL 6)
         textmarkup.cpp
         richtextedit.h
         richtextedit.cpp
+        slidebackground.h
+        slidebackground.cpp
+        backgroundpicker.h
+        backgroundpicker.cpp
         searchfield.h
         searchfield.cpp
         data.qrc

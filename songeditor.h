@@ -18,8 +18,10 @@
 
 #include <QDialog>
 
+#include "slidebackground.h"
 #include "song.h"
 
+class BackgroundPicker;
 class QCheckBox;
 class QComboBox;
 class QLabel;
@@ -35,6 +37,7 @@ class SongStore;
 //   Event:    lyrics and data are saved in the library (a correction is wanted everywhere),
 //             the order only applies to this event unless "use as default" is checked.
 //             Linked songs can be shown as translation below the lyrics (this event only).
+// The song's own background is chosen in the library (an entry's one via the playlist).
 // Links to translations are saved in the library by the caller (linkedIds()).
 class SongEditorDialog : public QDialog {
     Q_OBJECT
@@ -96,5 +99,6 @@ private:
     RichTextEdit    *m_text = nullptr;
     QListWidget     *m_order = nullptr;
     QCheckBox       *m_asDefault = nullptr;
+    BackgroundPicker *m_background = nullptr;
     QPushButton     *m_okBtn = nullptr;
 };

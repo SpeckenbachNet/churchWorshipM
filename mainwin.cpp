@@ -15,8 +15,10 @@
 #include "songspage.h"
 #include "songstore.h"
 #include "songeditor.h"
+#include "backgroundpicker.h"
 
 #include <QCloseEvent>
+#include <QDialogButtonBox>
 #include <QFileDialog>
 #include <QFileInfo>
 #include <QInputDialog>
@@ -24,12 +26,14 @@
 #include <algorithm>
 #include <QJsonDocument>
 #include <QJsonObject>
+#include <QLabel>
 #include <QMenu>
 #include <QMessageBox>
 #include <QNetworkAccessManager>
 #include <QNetworkReply>
 #include <QUrlQuery>
 #include <QShortcut>
+#include <QVBoxLayout>
 
 namespace {
 constexpr QSize kThumbSize{160, 90};
@@ -44,6 +48,7 @@ MainWin::MainWin(QWidget *parent)
     m_network = new QNetworkAccessManager(this);
     m_converter = new PresentationConverter(this);
     m_library = new MediaLibrary(m_converter, this);
+    BackgroundPicker::setLibrary(m_library);
     ui->libraryBrowser->setLibrary(m_library);
     m_events = new EventStore(this);
     ui->eventsBrowser->setStore(m_events);
@@ -263,7 +268,10 @@ void MainWin::initializeConnections() {
     connect(m_songs, &SongStore::changed, this, [this] {
         for (int i = 0; i < ui->playlistWidget->count(); ++i) {
             QListWidgetItem *item = ui->playlistWidget->item(i);
-            if (refreshSongEntry(item) && item == ui->playlistWidget->currentItem()) {
+            // Lyrics or the song's background changed
+            const bool changed = refreshSongEntry(item);
+            if (item == ui->playlistWidget->currentItem()
+                && (changed || (m_deck && entryBackground(item) != m_shownBackground))) {
                 showEntry(item);
             }
         }
@@ -299,6 +307,20 @@ void MainWin::initializeConnections() {
     connect(ui->playlistWidget, &QListWidget::currentItemChanged, this,
             [this](QListWidgetItem *current) { showEntry(current); });
     connect(ui->playlistWidget, &QListWidget::itemDoubleClicked, this, &MainWin::editEntry);
+    // Context menu: edit, and the background of text entries (bible texts have no other place for it)
+    ui->playlistWidget->setContextMenuPolicy(Qt::CustomContextMenu);
+    connect(ui->playlistWidget, &QWidget::customContextMenuRequested, this, [this](const QPoint &pos) {
+        QListWidgetItem *item = ui->playlistWidget->itemAt(pos);
+        if (!item) {
+            return;
+        }
+        QMenu menu(this);
+        menu.addAction(tr("Edit..."), this, [this, item] { editEntry(item); });
+        if (MediaItem::isTextType(MediaItem::Type(item->data(MediaItem::TypeRole).toInt()))) {
+            menu.addAction(tr("Background..."), this, [this, item] { editEntryBackground(item); });
+        }
+        menu.exec(ui->playlistWidget->viewport()->mapToGlobal(pos));
+    });
     connect(ui->slidesListWidget, &QListWidget::currentRowChanged, this, &MainWin::showSlide);
 
     // Every change of the playlist model is saved automatically (incl. drag & drop)
@@ -497,6 +519,7 @@ void MainWin::editEntry(QListWidgetItem *item) {
     TextSlideDialog dlg(type, this);
     dlg.setTitle(item->text());
     dlg.setText(item->data(MediaItem::TextRole).toString());
+    dlg.setPreviewBackground(entryBackground(item));
     if (dlg.exec() != QDialog::Accepted) {
         return;
     }
@@ -556,6 +579,7 @@ void MainWin::loadEvent(const QString &id) {
     m_loading = true;
     ui->playlistWidget->clear();
     m_eventId = m_events->event(id).isValid() ? id : QString();
+    m_eventBackground = m_events->event(m_eventId).background;
     for (const QJsonValue &v : m_events->items(m_eventId)) {
         ui->playlistWidget->addItem(entryFromJson(v.toObject()));
     }
@@ -609,6 +633,51 @@ void MainWin::onEventsChanged() {
         return;
     }
     updateEventHeader();   // may have been renamed
+    // Background of the event changed: the current text entry may use it
+    const SlideBackground background = m_events->event(m_eventId).background;
+    if (background != m_eventBackground) {
+        m_eventBackground = background;
+        if (QListWidgetItem *item = ui->playlistWidget->currentItem()) {
+            showEntry(item);
+        }
+    }
+}
+
+SlideBackground MainWin::defaultBackground(const QListWidgetItem *item) const {
+    // Songs: their own from the library, otherwise the event's
+    const Song song = m_songs->song(item->data(MediaItem::SongRole).toJsonObject().value("id").toString());
+    return song.background.resolved(m_events->event(m_eventId).background);
+}
+
+SlideBackground MainWin::entryBackground(const QListWidgetItem *item) const {
+    const SlideBackground own = SlideBackground::fromJson(item->data(MediaItem::BackgroundRole).toJsonObject());
+    return BackgroundPicker::withCurrentPath(own.resolved(defaultBackground(item)));
+}
+
+void MainWin::editEntryBackground(QListWidgetItem *item) {
+    QDialog dlg(this);
+    dlg.setWindowTitle(tr("Background"));
+    auto *picker = new BackgroundPicker(tr("Default"), &dlg);
+    picker->setToolTip(tr("Default: the background of the song, otherwise the one of the event."));
+    picker->setInherited(defaultBackground(item));
+    picker->setBackground(SlideBackground::fromJson(item->data(MediaItem::BackgroundRole).toJsonObject()));
+    auto *buttons = new QDialogButtonBox(QDialogButtonBox::Ok | QDialogButtonBox::Cancel, &dlg);
+    connect(buttons, &QDialogButtonBox::accepted, &dlg, &QDialog::accept);
+    connect(buttons, &QDialogButtonBox::rejected, &dlg, &QDialog::reject);
+    auto *layout = new QVBoxLayout(&dlg);
+    layout->setContentsMargins(20, 20, 20, 16);
+    layout->setSpacing(16);
+    layout->addWidget(new QLabel(item->text(), &dlg));
+    layout->addWidget(picker);
+    layout->addWidget(buttons);
+    dlg.resize(460, dlg.sizeHint().height());
+    if (dlg.exec() != QDialog::Accepted) {
+        return;
+    }
+    item->setData(MediaItem::BackgroundRole, picker->background().toJson());
+    if (item == ui->playlistWidget->currentItem()) {
+        showEntry(item);
+    }
 }
 
 QJsonObject MainWin::entryToJson(const QListWidgetItem *item) const {
@@ -623,6 +692,10 @@ QJsonObject MainWin::entryToJson(const QListWidgetItem *item) const {
         const QJsonObject song = item->data(MediaItem::SongRole).toJsonObject();
         if (!song.isEmpty()) {
             o.insert("song", song);
+        }
+        const QJsonObject background = item->data(MediaItem::BackgroundRole).toJsonObject();
+        if (!background.isEmpty()) {
+            o.insert("background", background);
         }
     } else {
         o.insert("source", item->data(MediaItem::SourceRole).toString());
@@ -641,6 +714,9 @@ QListWidgetItem *MainWin::entryFromJson(const QJsonObject &o) {
                                         o.value("text").toString());
     if (o.contains("bible")) {
         item->setData(MediaItem::BibleRole, o.value("bible").toObject());
+    }
+    if (o.contains("background")) {
+        item->setData(MediaItem::BackgroundRole, o.value("background").toObject());
     }
     if (o.contains("song")) {
         item->setData(MediaItem::SongRole, o.value("song").toObject());
@@ -1115,6 +1191,12 @@ void MainWin::showEntry(QListWidgetItem *item) {
         ui->previewLabel->setText(error);
         updateBeamer();
         return;
+    }
+
+    m_shownBackground = SlideBackground();
+    if (MediaItem::isTextType(MediaItem::Type(item->data(MediaItem::TypeRole).toInt()))) {
+        m_shownBackground = entryBackground(item);
+        m_deck->setBackground(m_shownBackground);
     }
 
     // Thumbnails

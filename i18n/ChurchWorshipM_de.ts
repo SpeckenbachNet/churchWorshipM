@@ -2,6 +2,107 @@
 <!DOCTYPE TS>
 <TS version="2.1" language="de">
 <context>
+    <name>BackgroundPicker</name>
+    <message>
+        <location filename="../backgroundpicker.cpp" line="46"/>
+        <source>Night blue</source>
+        <translation>Nachtblau</translation>
+    </message>
+    <message>
+        <location filename="../backgroundpicker.cpp" line="47"/>
+        <source>Petrol</source>
+        <translation>Petrol</translation>
+    </message>
+    <message>
+        <location filename="../backgroundpicker.cpp" line="48"/>
+        <source>Dark green</source>
+        <translation>Dunkelgrün</translation>
+    </message>
+    <message>
+        <location filename="../backgroundpicker.cpp" line="49"/>
+        <source>Bordeaux</source>
+        <translation>Bordeaux</translation>
+    </message>
+    <message>
+        <location filename="../backgroundpicker.cpp" line="50"/>
+        <source>Violet</source>
+        <translation>Violett</translation>
+    </message>
+    <message>
+        <location filename="../backgroundpicker.cpp" line="51"/>
+        <source>Brown</source>
+        <translation>Braun</translation>
+    </message>
+    <message>
+        <location filename="../backgroundpicker.cpp" line="52"/>
+        <source>Anthracite</source>
+        <translation>Anthrazit</translation>
+    </message>
+    <message>
+        <location filename="../backgroundpicker.cpp" line="83"/>
+        <location filename="../backgroundpicker.cpp" line="294"/>
+        <location filename="../backgroundpicker.cpp" line="305"/>
+        <source>Background image</source>
+        <translation>Hintergrundbild</translation>
+    </message>
+    <message>
+        <location filename="../backgroundpicker.cpp" line="99"/>
+        <source>The media library has no images yet.</source>
+        <translation>Die Medienbibliothek enthält noch keine Bilder.</translation>
+    </message>
+    <message>
+        <location filename="../backgroundpicker.cpp" line="160"/>
+        <source>Black</source>
+        <translation>Schwarz</translation>
+    </message>
+    <message>
+        <location filename="../backgroundpicker.cpp" line="161"/>
+        <location filename="../backgroundpicker.cpp" line="169"/>
+        <source>Color</source>
+        <translation>Farbe</translation>
+    </message>
+    <message>
+        <location filename="../backgroundpicker.cpp" line="162"/>
+        <source>Image</source>
+        <translation>Bild</translation>
+    </message>
+    <message>
+        <location filename="../backgroundpicker.cpp" line="176"/>
+        <source>More colors...</source>
+        <translation>Weitere Farben...</translation>
+    </message>
+    <message>
+        <location filename="../backgroundpicker.cpp" line="179"/>
+        <source>Background color</source>
+        <translation>Hintergrundfarbe</translation>
+    </message>
+    <message>
+        <location filename="../backgroundpicker.cpp" line="187"/>
+        <source>Choose image</source>
+        <translation>Bild wählen</translation>
+    </message>
+    <message>
+        <location filename="../backgroundpicker.cpp" line="189"/>
+        <source>From the media library...</source>
+        <translation>Aus der Medienbibliothek...</translation>
+    </message>
+    <message>
+        <location filename="../backgroundpicker.cpp" line="190"/>
+        <source>File...</source>
+        <translation>Datei...</translation>
+    </message>
+    <message>
+        <location filename="../backgroundpicker.cpp" line="203"/>
+        <source>Darken:</source>
+        <translation>Abdunkeln:</translation>
+    </message>
+    <message>
+        <location filename="../backgroundpicker.cpp" line="360"/>
+        <source>Text</source>
+        <translation>Text</translation>
+    </message>
+</context>
+<context>
     <name>BeamerWindow</name>
     <message>
         <location filename="../beamerwindow.cpp" line="53"/>
@@ -363,52 +464,62 @@ Bitte stelle sicher, dass eure Gemeinde diese Übersetzung nutzen darf (z. B. f�
 <context>
     <name>EventDialog</name>
     <message>
-        <location filename="../eventdialog.cpp" line="42"/>
+        <location filename="../eventdialog.cpp" line="43"/>
         <source>New template</source>
         <translation>Neue Vorlage</translation>
     </message>
     <message>
-        <location filename="../eventdialog.cpp" line="42"/>
+        <location filename="../eventdialog.cpp" line="43"/>
         <source>Template properties</source>
         <translation>Eigenschaften der Vorlage</translation>
     </message>
     <message>
-        <location filename="../eventdialog.cpp" line="44"/>
+        <location filename="../eventdialog.cpp" line="45"/>
         <source>New event</source>
         <translation>Neue Veranstaltung</translation>
     </message>
     <message>
-        <location filename="../eventdialog.cpp" line="44"/>
+        <location filename="../eventdialog.cpp" line="45"/>
         <source>Event properties</source>
         <translation>Eigenschaften der Veranstaltung</translation>
     </message>
     <message>
-        <location filename="../eventdialog.cpp" line="95"/>
+        <location filename="../eventdialog.cpp" line="100"/>
         <source>Name:</source>
         <translation>Name:</translation>
     </message>
     <message>
-        <location filename="../eventdialog.cpp" line="103"/>
+        <location filename="../eventdialog.cpp" line="108"/>
         <source>Date:</source>
         <translation>Datum:</translation>
     </message>
     <message>
-        <location filename="../eventdialog.cpp" line="101"/>
+        <location filename="../eventdialog.cpp" line="144"/>
+        <source>Background:</source>
+        <translation>Hintergrund:</translation>
+    </message>
+    <message>
+        <location filename="../eventdialog.cpp" line="145"/>
+        <source>For songs, bible texts and own slides. Songs and single entries can have their own.</source>
+        <translation>Für Lieder, Bibeltexte und eigene Folien. Lieder und einzelne Einträge können einen eigenen haben.</translation>
+    </message>
+    <message>
+        <location filename="../eventdialog.cpp" line="106"/>
         <source>Time:</source>
         <translation>Uhrzeit:</translation>
     </message>
     <message>
-        <location filename="../eventdialog.cpp" line="111"/>
+        <location filename="../eventdialog.cpp" line="116"/>
         <source>(empty playlist)</source>
         <translation>(leere Playlist)</translation>
     </message>
     <message>
-        <location filename="../eventdialog.cpp" line="115"/>
+        <location filename="../eventdialog.cpp" line="120"/>
         <source>Template:</source>
         <translation>Vorlage:</translation>
     </message>
     <message>
-        <location filename="../eventdialog.cpp" line="127"/>
+        <location filename="../eventdialog.cpp" line="143"/>
         <source>Note:</source>
         <translation>Anmerkung:</translation>
     </message>
@@ -463,18 +574,18 @@ Bitte stelle sicher, dass eure Gemeinde diese Übersetzung nutzen darf (z. B. f�
 <context>
     <name>EventStore</name>
     <message>
-        <location filename="../eventstore.cpp" line="282"/>
-        <location filename="../eventstore.cpp" line="287"/>
+        <location filename="../eventstore.cpp" line="305"/>
+        <location filename="../eventstore.cpp" line="310"/>
         <source>Cannot write %1.</source>
         <translation>%1 kann nicht geschrieben werden.</translation>
     </message>
     <message>
-        <location filename="../eventstore.cpp" line="297"/>
+        <location filename="../eventstore.cpp" line="320"/>
         <source>Cannot open %1.</source>
         <translation>%1 kann nicht geöffnet werden.</translation>
     </message>
     <message>
-        <location filename="../eventstore.cpp" line="303"/>
+        <location filename="../eventstore.cpp" line="326"/>
         <source>%1 is not an event file.</source>
         <translation>%1 ist keine Veranstaltungsdatei.</translation>
     </message>
@@ -744,337 +855,362 @@ Bitte stelle sicher, dass eure Gemeinde diese Übersetzung nutzen darf (z. B. f�
         <translation>MainWin</translation>
     </message>
     <message>
-        <location filename="../mainwin.cpp" line="63"/>
-        <location filename="../mainwin.cpp" line="120"/>
-        <location filename="../mainwin.cpp" line="134"/>
+        <location filename="../mainwin.cpp" line="68"/>
+        <location filename="../mainwin.cpp" line="125"/>
+        <location filename="../mainwin.cpp" line="139"/>
         <source>New</source>
         <translation>Neu</translation>
     </message>
     <message>
-        <location filename="../mainwin.cpp" line="143"/>
+        <location filename="../mainwin.cpp" line="148"/>
         <source>Open</source>
         <translation>Öffnen</translation>
     </message>
     <message>
-        <location filename="../mainwin.cpp" line="70"/>
+        <location filename="../mainwin.cpp" line="75"/>
         <source>Projector</source>
         <translation>Beamer</translation>
     </message>
     <message>
-        <location filename="../mainwin.cpp" line="72"/>
+        <location filename="../mainwin.cpp" line="77"/>
         <source>Show / hide projector output (F5)</source>
         <translation>Beamer-Ausgabe ein-/ausblenden (F5)</translation>
     </message>
     <message>
-        <location filename="../mainwin.cpp" line="74"/>
+        <location filename="../mainwin.cpp" line="79"/>
         <source>Black</source>
         <translation>Schwarz</translation>
     </message>
     <message>
-        <location filename="../mainwin.cpp" line="76"/>
+        <location filename="../mainwin.cpp" line="81"/>
         <source>Blank the projector (B)</source>
         <translation>Beamer schwarz schalten (B)</translation>
     </message>
     <message>
-        <location filename="../mainwin.cpp" line="81"/>
+        <location filename="../mainwin.cpp" line="86"/>
         <source>Song library</source>
         <translation>Liedbibliothek</translation>
     </message>
     <message>
-        <location filename="../mainwin.cpp" line="83"/>
+        <location filename="../mainwin.cpp" line="88"/>
         <source>Media library</source>
         <translation>Mediathek</translation>
     </message>
     <message>
-        <location filename="../mainwin.cpp" line="85"/>
+        <location filename="../mainwin.cpp" line="90"/>
         <source>Settings</source>
         <translation>Einstellungen</translation>
     </message>
     <message>
-        <location filename="../mainwin.cpp" line="94"/>
-        <location filename="../mainwin.cpp" line="101"/>
-        <location filename="../mainwin.cpp" line="108"/>
-        <location filename="../mainwin.cpp" line="118"/>
-        <location filename="../mainwin.cpp" line="132"/>
+        <location filename="../mainwin.cpp" line="99"/>
+        <location filename="../mainwin.cpp" line="106"/>
+        <location filename="../mainwin.cpp" line="113"/>
+        <location filename="../mainwin.cpp" line="123"/>
+        <location filename="../mainwin.cpp" line="137"/>
         <source>Back</source>
         <translation>Zurück</translation>
     </message>
     <message>
-        <location filename="../mainwin.cpp" line="95"/>
-        <location filename="../mainwin.cpp" line="119"/>
-        <location filename="../mainwin.cpp" line="133"/>
+        <location filename="../mainwin.cpp" line="100"/>
+        <location filename="../mainwin.cpp" line="124"/>
+        <location filename="../mainwin.cpp" line="138"/>
         <source>Back to the presentation</source>
         <translation>Zurück zur Präsentation</translation>
     </message>
     <message>
-        <location filename="../mainwin.cpp" line="102"/>
+        <location filename="../mainwin.cpp" line="107"/>
         <source>Back to the presentation without changes</source>
         <translation>Ohne Änderungen zurück zur Präsentation</translation>
     </message>
     <message>
-        <location filename="../mainwin.cpp" line="104"/>
-        <location filename="../mainwin.cpp" line="114"/>
-        <location filename="../mainwin.cpp" line="128"/>
+        <location filename="../mainwin.cpp" line="109"/>
+        <location filename="../mainwin.cpp" line="119"/>
+        <location filename="../mainwin.cpp" line="133"/>
         <source>Apply</source>
         <translation>Übernehmen</translation>
     </message>
     <message>
-        <location filename="../mainwin.cpp" line="105"/>
+        <location filename="../mainwin.cpp" line="110"/>
         <source>Put the selected passage into the playlist</source>
         <translation>Die gewählte Stelle in die Playlist übernehmen</translation>
     </message>
     <message>
-        <location filename="../mainwin.cpp" line="109"/>
-        <location filename="../mainwin.cpp" line="160"/>
+        <location filename="../mainwin.cpp" line="114"/>
+        <location filename="../mainwin.cpp" line="165"/>
         <source>Add</source>
         <translation>Hinzufügen</translation>
     </message>
     <message>
-        <location filename="../mainwin.cpp" line="110"/>
+        <location filename="../mainwin.cpp" line="115"/>
         <source>Update</source>
         <translation>Aktualisieren</translation>
     </message>
     <message>
-        <location filename="../mainwin.cpp" line="111"/>
+        <location filename="../mainwin.cpp" line="116"/>
         <source>Take over the newer version of the original file</source>
         <translation>Die neuere Fassung der Originaldatei übernehmen</translation>
     </message>
     <message>
-        <location filename="../mainwin.cpp" line="115"/>
+        <location filename="../mainwin.cpp" line="120"/>
         <source>Put the selected entries into the playlist</source>
         <translation>Die markierten Einträge in die Playlist übernehmen</translation>
     </message>
     <message>
-        <location filename="../mainwin.cpp" line="121"/>
+        <location filename="../mainwin.cpp" line="126"/>
         <source>Type in a new song</source>
         <translation>Neues Lied eintippen</translation>
     </message>
     <message>
-        <location filename="../mainwin.cpp" line="123"/>
+        <location filename="../mainwin.cpp" line="128"/>
         <source>Lyrics, parts and order of the song</source>
         <translation>Text, Teile und Reihenfolge des Liedes</translation>
     </message>
     <message>
-        <location filename="../mainwin.cpp" line="125"/>
+        <location filename="../mainwin.cpp" line="130"/>
         <source>Import lyrics files downloaded from SongSelect (*.txt)</source>
         <translation>Von SongSelect heruntergeladene Liedtextdateien importieren (*.txt)</translation>
     </message>
     <message>
-        <location filename="../mainwin.cpp" line="129"/>
+        <location filename="../mainwin.cpp" line="134"/>
         <source>Put the selected songs into the playlist</source>
         <translation>Die ausgewählten Lieder in die Ablaufliste übernehmen</translation>
     </message>
     <message>
-        <location filename="../mainwin.cpp" line="135"/>
+        <location filename="../mainwin.cpp" line="140"/>
         <source>Properties</source>
         <translation>Eigenschaften</translation>
     </message>
     <message>
-        <location filename="../mainwin.cpp" line="136"/>
+        <location filename="../mainwin.cpp" line="141"/>
         <source>Name, date, time and note</source>
         <translation>Name, Datum, Uhrzeit und Anmerkung</translation>
     </message>
     <message>
-        <location filename="../mainwin.cpp" line="126"/>
-        <location filename="../mainwin.cpp" line="137"/>
+        <location filename="../mainwin.cpp" line="131"/>
+        <location filename="../mainwin.cpp" line="142"/>
         <source>Delete</source>
         <translation>Löschen</translation>
     </message>
     <message>
-        <location filename="../mainwin.cpp" line="124"/>
-        <location filename="../mainwin.cpp" line="138"/>
+        <location filename="../mainwin.cpp" line="129"/>
+        <location filename="../mainwin.cpp" line="143"/>
         <source>Import</source>
         <translation>Importieren</translation>
     </message>
     <message>
-        <location filename="../mainwin.cpp" line="139"/>
+        <location filename="../mainwin.cpp" line="144"/>
         <source>Import events from files (*.cwm)</source>
         <translation>Veranstaltungen aus Dateien importieren (*.cwm)</translation>
     </message>
     <message>
-        <location filename="../mainwin.cpp" line="140"/>
+        <location filename="../mainwin.cpp" line="145"/>
         <source>Export</source>
         <translation>Exportieren</translation>
     </message>
     <message>
-        <location filename="../mainwin.cpp" line="141"/>
+        <location filename="../mainwin.cpp" line="146"/>
         <source>Save the selected event as a file, e.g. for another computer</source>
         <translation>Ausgewählte Veranstaltung als Datei speichern, z. B. für einen anderen Computer</translation>
     </message>
     <message>
-        <location filename="../mainwin.cpp" line="144"/>
+        <location filename="../mainwin.cpp" line="149"/>
         <source>Open the selected event in the presentation</source>
         <translation>Ausgewählte Veranstaltung in der Präsentation öffnen</translation>
     </message>
     <message>
-        <location filename="../mainwin.cpp" line="147"/>
+        <location filename="../mainwin.cpp" line="152"/>
         <source>Event...</source>
         <translation>Veranstaltung...</translation>
     </message>
     <message>
-        <location filename="../mainwin.cpp" line="148"/>
+        <location filename="../mainwin.cpp" line="153"/>
         <source>Template...</source>
         <translation>Vorlage...</translation>
     </message>
     <message>
-        <location filename="../mainwin.cpp" line="122"/>
-        <location filename="../mainwin.cpp" line="161"/>
+        <location filename="../mainwin.cpp" line="127"/>
+        <location filename="../mainwin.cpp" line="166"/>
         <source>Edit</source>
         <translation>Bearbeiten</translation>
     </message>
     <message>
-        <location filename="../mainwin.cpp" line="167"/>
+        <location filename="../mainwin.cpp" line="172"/>
         <source>File...</source>
         <translation>Datei …</translation>
     </message>
     <message>
-        <location filename="../mainwin.cpp" line="168"/>
+        <location filename="../mainwin.cpp" line="173"/>
         <source>From media library...</source>
         <translation>Aus Mediathek …</translation>
     </message>
     <message>
-        <location filename="../mainwin.cpp" line="378"/>
         <location filename="../mainwin.cpp" line="400"/>
+        <location filename="../mainwin.cpp" line="422"/>
         <source>Add files</source>
         <translation>Dateien hinzufügen</translation>
     </message>
     <message>
-        <location filename="../mainwin.cpp" line="112"/>
-        <location filename="../mainwin.cpp" line="162"/>
+        <location filename="../mainwin.cpp" line="117"/>
+        <location filename="../mainwin.cpp" line="167"/>
         <source>Remove</source>
         <translation>Entfernen</translation>
     </message>
     <message>
-        <location filename="../mainwin.cpp" line="64"/>
+        <location filename="../mainwin.cpp" line="69"/>
         <source>New event (Ctrl+N)</source>
         <translation>Neue Veranstaltung (Strg+N)</translation>
     </message>
     <message>
-        <location filename="../mainwin.cpp" line="65"/>
+        <location filename="../mainwin.cpp" line="70"/>
         <source>Events</source>
         <translation>Veranstaltungen</translation>
     </message>
     <message>
-        <location filename="../mainwin.cpp" line="66"/>
+        <location filename="../mainwin.cpp" line="71"/>
         <source>Open or manage events and templates (Ctrl+O)</source>
         <translation>Veranstaltungen und Vorlagen öffnen oder verwalten (Strg+O)</translation>
     </message>
     <message>
-        <location filename="../mainwin.cpp" line="163"/>
+        <location filename="../mainwin.cpp" line="168"/>
         <source>Move up</source>
         <translation>Nach oben</translation>
     </message>
     <message>
-        <location filename="../mainwin.cpp" line="164"/>
+        <location filename="../mainwin.cpp" line="169"/>
         <source>Move down</source>
         <translation>Nach unten</translation>
     </message>
     <message>
-        <location filename="../mainwin.cpp" line="171"/>
+        <location filename="../mainwin.cpp" line="176"/>
         <source>YouTube video...</source>
         <translation>YouTube-Video …</translation>
     </message>
     <message>
-        <location filename="../mainwin.cpp" line="174"/>
+        <location filename="../mainwin.cpp" line="179"/>
         <source>Blank entry</source>
         <translation>Leereintrag</translation>
     </message>
     <message>
-        <location filename="../mainwin.cpp" line="177"/>
+        <location filename="../mainwin.cpp" line="182"/>
         <source>Song...</source>
         <translation>Lied …</translation>
     </message>
     <message>
-        <location filename="../mainwin.cpp" line="179"/>
+        <location filename="../mainwin.cpp" line="184"/>
         <source>Bible text...</source>
         <translation>Bibeltext …</translation>
     </message>
     <message>
-        <location filename="../mainwin.cpp" line="181"/>
+        <location filename="../mainwin.cpp" line="186"/>
         <source>Own slide...</source>
         <translation>Eigene Folie …</translation>
     </message>
     <message>
-        <location filename="../mainwin.cpp" line="187"/>
+        <location filename="../mainwin.cpp" line="192"/>
         <source>Play</source>
         <translation>Abspielen</translation>
     </message>
     <message>
-        <location filename="../mainwin.cpp" line="188"/>
+        <location filename="../mainwin.cpp" line="193"/>
         <source>Pause</source>
         <translation>Pause</translation>
     </message>
     <message>
-        <location filename="../mainwin.cpp" line="189"/>
+        <location filename="../mainwin.cpp" line="194"/>
         <source>Stop</source>
         <translation>Stopp</translation>
     </message>
     <message>
-        <location filename="../mainwin.cpp" line="600"/>
+        <location filename="../mainwin.cpp" line="318"/>
+        <source>Edit...</source>
+        <translation>Bearbeiten...</translation>
+    </message>
+    <message>
+        <location filename="../mainwin.cpp" line="320"/>
+        <source>Background...</source>
+        <translation>Hintergrund...</translation>
+    </message>
+    <message>
+        <location filename="../mainwin.cpp" line="624"/>
         <source>The changes of the event could not be saved.</source>
         <translation>Die Änderungen der Veranstaltung konnten nicht gespeichert werden.</translation>
     </message>
     <message>
-        <location filename="../mainwin.cpp" line="912"/>
+        <location filename="../mainwin.cpp" line="659"/>
+        <source>Background</source>
+        <translation>Hintergrund</translation>
+    </message>
+    <message>
+        <location filename="../mainwin.cpp" line="660"/>
+        <source>Default</source>
+        <translation>Standard</translation>
+    </message>
+    <message>
+        <location filename="../mainwin.cpp" line="661"/>
+        <source>Default: the background of the song, otherwise the one of the event.</source>
+        <translation>Standard: der Hintergrund des Liedes, sonst der des Gottesdienstes.</translation>
+    </message>
+    <message>
+        <location filename="../mainwin.cpp" line="988"/>
         <source>CCLI Song # %1</source>
         <translation>CCLI-Liednummer %1</translation>
     </message>
     <message>
-        <location filename="../mainwin.cpp" line="930"/>
+        <location filename="../mainwin.cpp" line="1006"/>
         <source>CCLI License # %1</source>
         <translation>CCLI-Lizenznummer %1</translation>
     </message>
     <message>
-        <location filename="../mainwin.cpp" line="1068"/>
+        <location filename="../mainwin.cpp" line="1144"/>
         <source>Create a new event or open one under &quot;Events&quot;.</source>
         <translation>Lege eine neue Veranstaltung an oder öffne eine unter „Veranstaltungen“.</translation>
     </message>
     <message>
-        <location filename="../mainwin.cpp" line="1069"/>
+        <location filename="../mainwin.cpp" line="1145"/>
         <source>Add files or text slides to the playlist.</source>
         <translation>Füge Dateien oder Textfolien zur Playlist hinzu.</translation>
     </message>
     <message>
-        <location filename="../mainwin.cpp" line="415"/>
-        <location filename="../mainwin.cpp" line="422"/>
-        <location filename="../mainwin.cpp" line="425"/>
-        <location filename="../mainwin.cpp" line="458"/>
+        <location filename="../mainwin.cpp" line="437"/>
+        <location filename="../mainwin.cpp" line="444"/>
+        <location filename="../mainwin.cpp" line="447"/>
+        <location filename="../mainwin.cpp" line="480"/>
         <source>YouTube video</source>
         <translation>YouTube-Video</translation>
     </message>
     <message>
-        <location filename="../mainwin.cpp" line="416"/>
+        <location filename="../mainwin.cpp" line="438"/>
         <source>Link of the YouTube video:</source>
         <translation>Link des YouTube-Videos:</translation>
     </message>
     <message>
-        <location filename="../mainwin.cpp" line="422"/>
-        <location filename="../mainwin.cpp" line="1084"/>
+        <location filename="../mainwin.cpp" line="444"/>
+        <location filename="../mainwin.cpp" line="1160"/>
         <source>This is not a valid YouTube link.</source>
         <translation>Das ist kein gültiger YouTube-Link.</translation>
     </message>
     <message>
-        <location filename="../mainwin.cpp" line="439"/>
+        <location filename="../mainwin.cpp" line="461"/>
         <source>Blank</source>
         <translation>Leer</translation>
     </message>
     <message>
-        <location filename="../mainwin.cpp" line="600"/>
+        <location filename="../mainwin.cpp" line="624"/>
         <source>Save event</source>
         <translation>Veranstaltung speichern</translation>
     </message>
     <message>
-        <location filename="../mainwin.cpp" line="1077"/>
+        <location filename="../mainwin.cpp" line="1153"/>
         <source>Blank – the projector shows nothing</source>
         <translation>Leer – der Beamer zeigt nichts</translation>
     </message>
     <message>
-        <location filename="../mainwin.cpp" line="1090"/>
+        <location filename="../mainwin.cpp" line="1166"/>
         <source>YouTube video – plays on the projector</source>
         <translation>YouTube-Video – läuft auf dem Beamer</translation>
     </message>
     <message>
-        <location filename="../mainwin.cpp" line="1101"/>
+        <location filename="../mainwin.cpp" line="1177"/>
         <source>Converting presentation...</source>
         <translation>Präsentation wird umgewandelt …</translation>
     </message>
@@ -1326,17 +1462,17 @@ Bitte PowerPoint, OnlyOffice oder LibreOffice installieren oder die Präsentatio
         <translation>Die PDF-Datei konnte nicht geöffnet werden.</translation>
     </message>
     <message>
-        <location filename="../slidedeck.cpp" line="359"/>
+        <location filename="../slidedeck.cpp" line="368"/>
         <source>The image could not be loaded.</source>
         <translation>Das Bild konnte nicht geladen werden.</translation>
     </message>
     <message>
-        <location filename="../slidedeck.cpp" line="372"/>
+        <location filename="../slidedeck.cpp" line="381"/>
         <source>The presentation has not been converted yet.</source>
         <translation>Die Präsentation wurde noch nicht umgewandelt.</translation>
     </message>
     <message>
-        <location filename="../slidedeck.cpp" line="384"/>
+        <location filename="../slidedeck.cpp" line="393"/>
         <source>Unsupported file type.</source>
         <translation>Nicht unterstützter Dateityp.</translation>
     </message>
@@ -1427,177 +1563,192 @@ Bitte PowerPoint, OnlyOffice oder LibreOffice installieren oder die Präsentatio
 <context>
     <name>SongEditorDialog</name>
     <message>
-        <location filename="../songeditor.cpp" line="89"/>
+        <location filename="../songeditor.cpp" line="90"/>
         <source>Link translation</source>
         <translation>Übersetzung verknüpfen</translation>
     </message>
     <message>
-        <location filename="../songeditor.cpp" line="91"/>
+        <location filename="../songeditor.cpp" line="92"/>
         <source>Search title...</source>
         <translation>Titel suchen...</translation>
     </message>
     <message>
-        <location filename="../songeditor.cpp" line="134"/>
+        <location filename="../songeditor.cpp" line="135"/>
         <source>New song</source>
         <translation>Neues Lied</translation>
     </message>
     <message>
-        <location filename="../songeditor.cpp" line="134"/>
+        <location filename="../songeditor.cpp" line="135"/>
         <source>Edit song</source>
         <translation>Lied bearbeiten</translation>
     </message>
     <message>
-        <location filename="../songeditor.cpp" line="141"/>
+        <location filename="../songeditor.cpp" line="142"/>
         <source>e.g. 2011 Thankyou Music</source>
         <translation>z. B. 2011 Thankyou Music</translation>
     </message>
     <message>
-        <location filename="../songeditor.cpp" line="143"/>
+        <location filename="../songeditor.cpp" line="144"/>
         <source>empty for own songs</source>
         <translation>leer bei eigenen Liedern</translation>
     </message>
     <message>
-        <location filename="../songeditor.cpp" line="162"/>
+        <location filename="../songeditor.cpp" line="163"/>
         <source>Link...</source>
         <translation>Verknüpfen...</translation>
     </message>
     <message>
-        <location filename="../songeditor.cpp" line="163"/>
+        <location filename="../songeditor.cpp" line="164"/>
         <source>Links this song with the same song in another language</source>
         <translation>Verknüpft dieses Lied mit demselben Lied in einer anderen Sprache</translation>
     </message>
     <message>
-        <location filename="../songeditor.cpp" line="165"/>
+        <location filename="../songeditor.cpp" line="166"/>
         <source>Unlink</source>
         <translation>Lösen</translation>
     </message>
     <message>
-        <location filename="../songeditor.cpp" line="166"/>
+        <location filename="../songeditor.cpp" line="167"/>
         <source>Removes this song from the linked translations</source>
         <translation>Löst dieses Lied aus den verknüpften Übersetzungen</translation>
     </message>
     <message>
-        <location filename="../songeditor.cpp" line="176"/>
+        <location filename="../songeditor.cpp" line="177"/>
         <source>Language:</source>
         <translation>Sprache:</translation>
     </message>
     <message>
-        <location filename="../songeditor.cpp" line="178"/>
+        <location filename="../songeditor.cpp" line="179"/>
         <source>Title:</source>
         <translation>Titel:</translation>
     </message>
     <message>
-        <location filename="../songeditor.cpp" line="179"/>
+        <location filename="../songeditor.cpp" line="180"/>
         <source>Authors:</source>
         <translation>Autoren:</translation>
     </message>
     <message>
-        <location filename="../songeditor.cpp" line="182"/>
+        <location filename="../songeditor.cpp" line="183"/>
         <source>CCLI no.:</source>
         <translation>CCLI-Nr.:</translation>
     </message>
     <message>
-        <location filename="../songeditor.cpp" line="184"/>
+        <location filename="../songeditor.cpp" line="185"/>
         <source>Copyright:</source>
         <translation>Copyright:</translation>
     </message>
     <message>
-        <location filename="../songeditor.cpp" line="193"/>
+        <location filename="../songeditor.cpp" line="194"/>
         <source>Translations:</source>
         <translation>Übersetzungen:</translation>
     </message>
     <message>
+        <location filename="../songeditor.cpp" line="196"/>
+        <source>None</source>
+        <translation>Keiner</translation>
+    </message>
+    <message>
         <location filename="../songeditor.cpp" line="198"/>
+        <source>Used in every event unless the entry has its own. &quot;None&quot;: the background of the event.</source>
+        <translation>Gilt in jedem Gottesdienst, außer der Eintrag hat einen eigenen. „Keiner“: der Hintergrund des Gottesdienstes.</translation>
+    </message>
+    <message>
+        <location filename="../songeditor.cpp" line="206"/>
         <source>Add</source>
         <translation>Hinzufügen</translation>
     </message>
     <message>
-        <location filename="../songeditor.cpp" line="207"/>
+        <location filename="../songeditor.cpp" line="215"/>
         <source>Remove</source>
         <translation>Entfernen</translation>
     </message>
     <message>
-        <location filename="../songeditor.cpp" line="208"/>
+        <location filename="../songeditor.cpp" line="216"/>
         <source>Add to order</source>
         <translation>In die Reihenfolge</translation>
     </message>
     <message>
-        <location filename="../songeditor.cpp" line="209"/>
+        <location filename="../songeditor.cpp" line="217"/>
         <source>Appends the part to the order (also: double click)</source>
         <translation>Hängt den Teil an die Reihenfolge an (auch per Doppelklick)</translation>
     </message>
     <message>
-        <location filename="../songeditor.cpp" line="218"/>
+        <location filename="../songeditor.cpp" line="226"/>
         <source>Parts</source>
         <translation>Teile</translation>
     </message>
     <message>
-        <location filename="../songeditor.cpp" line="224"/>
+        <location filename="../songeditor.cpp" line="232"/>
         <source>A line with --- starts a new slide within the part.</source>
         <translation>Eine Zeile mit --- beginnt innerhalb des Teils eine neue Folie.</translation>
     </message>
     <message>
-        <location filename="../songeditor.cpp" line="229"/>
+        <location filename="../songeditor.cpp" line="237"/>
         <source>Lyrics of the part</source>
         <translation>Text des Teils</translation>
     </message>
     <message>
-        <location filename="../songeditor.cpp" line="251"/>
+        <location filename="../songeditor.cpp" line="259"/>
         <source>Remove from order</source>
         <translation>Aus der Reihenfolge entfernen</translation>
     </message>
     <message>
-        <location filename="../songeditor.cpp" line="256"/>
+        <location filename="../songeditor.cpp" line="264"/>
         <source>Every part once</source>
         <translation>Jeder Teil einmal</translation>
     </message>
     <message>
-        <location filename="../songeditor.cpp" line="257"/>
+        <location filename="../songeditor.cpp" line="265"/>
         <source>Resets the order: every part once in the listed sequence</source>
         <translation>Setzt die Reihenfolge zurück: jeder Teil einmal in der aufgelisteten Folge</translation>
     </message>
     <message>
-        <location filename="../songeditor.cpp" line="259"/>
+        <location filename="../songeditor.cpp" line="267"/>
         <source>Part in other language</source>
         <translation>Teil in anderer Sprache</translation>
     </message>
     <message>
-        <location filename="../songeditor.cpp" line="260"/>
+        <location filename="../songeditor.cpp" line="268"/>
         <source>Appends a part of a linked translation to the order</source>
         <translation>Hängt einen Teil einer verknüpften Übersetzung an die Reihenfolge an</translation>
     </message>
     <message>
-        <location filename="../songeditor.cpp" line="263"/>
+        <location filename="../songeditor.cpp" line="287"/>
         <source>Order (drag to rearrange, Del removes)</source>
         <translation>Reihenfolge (ziehen zum Umsortieren, Entf entfernt)</translation>
     </message>
     <message>
-        <location filename="../songeditor.cpp" line="281"/>
+        <location filename="../songeditor.cpp" line="305"/>
         <source>Show translation below:</source>
         <translation>Übersetzung darunter anzeigen:</translation>
     </message>
     <message>
-        <location filename="../songeditor.cpp" line="292"/>
+        <location filename="../songeditor.cpp" line="200"/>
+        <source>Background:</source>
+        <translation>Hintergrund:</translation>
+    </message>
+    <message>
+        <location filename="../songeditor.cpp" line="316"/>
         <source>Use this order as default for the song</source>
         <translation>Diese Reihenfolge als Standard für das Lied übernehmen</translation>
     </message>
     <message>
-        <location filename="../songeditor.cpp" line="293"/>
+        <location filename="../songeditor.cpp" line="317"/>
         <source>Otherwise the order only applies to this event.</source>
         <translation>Sonst gilt die Reihenfolge nur für diese Veranstaltung.</translation>
     </message>
     <message>
-        <location filename="../songeditor.cpp" line="294"/>
+        <location filename="../songeditor.cpp" line="318"/>
         <source>Changes of the lyrics apply to every event.</source>
         <translation>Änderungen am Text gelten für alle Veranstaltungen.</translation>
     </message>
     <message>
-        <location filename="../songeditor.cpp" line="402"/>
+        <location filename="../songeditor.cpp" line="426"/>
         <source>Missing in &quot;%1&quot;: %2</source>
         <translation>Fehlt in „%1“: %2</translation>
     </message>
     <message>
-        <location filename="../songeditor.cpp" line="417"/>
+        <location filename="../songeditor.cpp" line="431"/>
         <source>none</source>
         <translation>keine</translation>
     </message>
@@ -1841,12 +1992,12 @@ Eine Leerzeile beginnt eine neue Folie.</translation>
         <translation>Eine Leerzeile beginnt eine neue Folie.</translation>
     </message>
     <message>
-        <location filename="../textslidedialog.cpp" line="153"/>
+        <location filename="../textslidedialog.cpp" line="159"/>
         <source>No slides yet</source>
         <translation>Noch keine Folien</translation>
     </message>
     <message numerus="yes">
-        <location filename="../textslidedialog.cpp" line="168"/>
+        <location filename="../textslidedialog.cpp" line="175"/>
         <source>%n slide(s)</source>
         <translation>
             <numerusform>%n Folie</numerusform>

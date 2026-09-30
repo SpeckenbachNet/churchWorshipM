@@ -17,6 +17,7 @@
 #pragma once
 
 #include "mediaitem.h"
+#include "slidebackground.h"
 
 #include <QDialog>
 #include <QTimer>
@@ -38,6 +39,8 @@ public:
 
     void setTitle(const QString &title);
     void setText(const QString &text);
+    // Background of the preview (the one the entry is shown with)
+    void setPreviewBackground(const SlideBackground &background);
 
     MediaItem::Type type() const { return m_type; }
     QString title() const;   // first line of the text if no title was entered
@@ -50,6 +53,7 @@ private:
     MediaItem::Type m_type;
     QLineEdit      *m_titleEdit = nullptr;
     RichTextEdit   *m_textEdit  = nullptr;
+    SlideBackground m_background{SlideBackground::Black};
     QListWidget    *m_preview   = nullptr;
     QLabel         *m_count     = nullptr;
     QPushButton    *m_okBtn     = nullptr;

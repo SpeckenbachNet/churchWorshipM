@@ -20,12 +20,14 @@
 
 #include <QDialog>
 
+class BackgroundPicker;
 class QComboBox;
 class QDateEdit;
 class QLineEdit;
 class QPlainTextEdit;
 
-// Create an event / a template, or edit its name, date, time and note.
+// Create an event / a template, or edit its name, date, time, note and the background of
+// its text slides.
 // New events can start with the playlist of a template.
 class EventDialog : public QDialog {
     Q_OBJECT
@@ -44,11 +46,14 @@ private:
     QTime time() const;   // invalid while the typed time is incomplete
 
     EventInfo       m_info;
+    QList<EventInfo> m_templates;
     QString         m_suggestedName;   // name taken over from a template, replaced when the template changes
+    SlideBackground m_suggestedBackground;   // the same for the background
 
     QLineEdit      *m_nameEdit = nullptr;
     QDateEdit      *m_dateEdit = nullptr;
     QComboBox      *m_timeCombo = nullptr;
     QPlainTextEdit *m_noteEdit = nullptr;
     QComboBox      *m_templateCombo = nullptr;
+    BackgroundPicker *m_background = nullptr;
 };

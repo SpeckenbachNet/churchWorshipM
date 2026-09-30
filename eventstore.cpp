@@ -33,8 +33,25 @@ namespace {
 const QString kConnection = QStringLiteral("events");
 
 // Version 1: only "items" (playlist files before the event management)
-// Version 2: additionally "event" with name, date, time, note, template
+// Version 2: additionally "event" with name, date, time, note, template (and background)
 constexpr int kFileVersion = 2;
+
+// The event has no "as event": missing means black
+SlideBackground eventBackground(const QJsonObject &o)
+{
+    const SlideBackground bg = SlideBackground::fromJson(o);
+    return bg.isInherit() ? SlideBackground{SlideBackground::Black} : bg;
+}
+
+SlideBackground backgroundFromText(const QString &json)
+{
+    return eventBackground(QJsonDocument::fromJson(json.toUtf8()).object());
+}
+
+QString backgroundToText(const SlideBackground &bg)
+{
+    return QString::fromUtf8(QJsonDocument(bg.toJson()).toJson(QJsonDocument::Compact));
+}
 
 } // namespace
 
@@ -57,6 +74,8 @@ EventStore::EventStore(QObject *parent)
                               "template INTEGER, modified TEXT)"));
         q.exec(QStringLiteral("CREATE TABLE IF NOT EXISTS items ("
                               "event TEXT, pos INTEGER, item TEXT, PRIMARY KEY (event, pos))"));
+        // Added later: fails harmlessly if the column exists already
+        q.exec(QStringLiteral("ALTER TABLE events ADD COLUMN background TEXT"));
         load();
     }
 }
@@ -71,7 +90,7 @@ EventStore::~EventStore()
 void EventStore::load()
 {
     QSqlQuery q(QStringLiteral("SELECT e.id, e.name, e.date, e.time, e.note, e.template, e.modified, "
-                               "(SELECT COUNT(*) FROM items i WHERE i.event = e.id) FROM events e"), m_db);
+                               "(SELECT COUNT(*) FROM items i WHERE i.event = e.id), e.background FROM events e"), m_db);
     while (q.next()) {
         EventInfo e;
         e.id = q.value(0).toString();
@@ -82,6 +101,7 @@ void EventStore::load()
         e.isTemplate = q.value(5).toBool();
         e.modified = QDateTime::fromString(q.value(6).toString(), Qt::ISODate);
         e.itemCount = q.value(7).toInt();
+        e.background = backgroundFromText(q.value(8).toString());
         m_events.insert(e.id, e);
     }
 }
@@ -89,8 +109,9 @@ void EventStore::load()
 bool EventStore::save(const EventInfo &e)
 {
     QSqlQuery q(m_db);
-    q.prepare(QStringLiteral("INSERT OR REPLACE INTO events (id, name, date, time, note, template, modified) "
-                             "VALUES (?, ?, ?, ?, ?, ?, ?)"));
+    q.prepare(QStringLiteral("INSERT OR REPLACE INTO events "
+                             "(id, name, date, time, note, template, modified, background) "
+                             "VALUES (?, ?, ?, ?, ?, ?, ?, ?)"));
     q.addBindValue(e.id);
     q.addBindValue(e.name);
     q.addBindValue(e.date.toString(Qt::ISODate));
@@ -98,6 +119,7 @@ bool EventStore::save(const EventInfo &e)
     q.addBindValue(e.note);
     q.addBindValue(e.isTemplate);
     q.addBindValue(e.modified.toString(Qt::ISODate));
+    q.addBindValue(backgroundToText(e.background));
     if (!q.exec()) {
         return false;
     }
@@ -199,6 +221,7 @@ bool EventStore::update(const EventInfo &info)
     }
     e.name = info.name;
     e.note = info.note;
+    e.background = info.background;
     if (!e.isTemplate) {
         e.date = info.date;
         e.time = info.time;
@@ -268,7 +291,7 @@ bool EventStore::exportFile(const QString &id, const QString &path, QString *err
     if (!e.isValid()) {
         return false;
     }
-    QJsonObject info{{"name", e.name}, {"note", e.note}};
+    QJsonObject info{{"name", e.name}, {"note", e.note}, {"background", e.background.toJson()}};
     if (e.isTemplate) {
         info.insert("template", true);
     } else {
@@ -310,6 +333,7 @@ QString EventStore::importFile(const QString &path, QString *error)
     EventInfo e;
     e.name = info.value("name").toString(QFileInfo(path).completeBaseName());
     e.note = info.value("note").toString();
+    e.background = eventBackground(info.value("background").toObject());
     e.isTemplate = info.value("template").toBool();
     e.date = QDate::fromString(info.value("date").toString(), Qt::ISODate);
     e.time = QTime::fromString(info.value("time").toString(), Qt::ISODate);

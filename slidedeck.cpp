@@ -110,17 +110,18 @@ public:
         if (size.isEmpty()) {
             return QImage();
         }
+        return SlideBackground::compose(size, m_background, m_backgroundImage, [&](QPainter &p) {
+            paint(p, index, size);
+        });
+    }
 
-        QImage image(size, QImage::Format_RGB32);
-        image.fill(Qt::black);
-
-        QPainter p(&image);
-        p.setRenderHint(QPainter::TextAntialiasing);
-        p.setPen(Qt::white);
-
-        // Largest font size where the whole text fits into the safe area
-        QRect area = image.rect().adjusted(size.width() / 16, size.height() / 12,
-                                           -size.width() / 16, -size.height() / 12);
+private:
+    void paint(QPainter &p, int index, const QSize &size)
+    {
+        // Safe area: margins at the edges
+        QRect area = QRect(QPoint(0, 0), size).adjusted(size.width() / 16, size.height() / 12,
+                                                        -size.width() / 16, -size.height() / 12);
+        const QColor muted = m_background.mutedColor();
 
         // Credits (copyright, CCLI) small at the bottom of the first slide
         if (index == 0 && !m_credits.isEmpty()) {
@@ -132,9 +133,8 @@ public:
             const QRect creditRect(area.left(), size.height() - size.height() / 24 - height,
                                    area.width(), height);
             p.setFont(small);
-            p.setPen(QColor(170, 170, 170));
+            p.setPen(muted);
             p.drawText(creditRect, Qt::AlignHCenter | Qt::AlignBottom, m_credits);
-            p.setPen(Qt::white);
             area.setBottom(qMin(area.bottom(), creditRect.top() - fm.lineSpacing()));
         }
         // Formatted text (bold / italic / underline), every line centered
@@ -143,7 +143,7 @@ public:
         // Translation below, half the size and gray
         const QString translated = m_translation.value(index).trimmed();
         QTextDocument trans;
-        prepare(trans, translated, QColor(150, 150, 150), area.width());
+        prepare(trans, translated, muted, area.width());
 
         // Largest font size where the whole text fits; a single word is never broken
         int pixelSize = size.height() / 9;
@@ -162,10 +162,8 @@ public:
             p.translate(0, height - trans.size().height());
             trans.drawContents(&p);
         }
-        return image;
     }
 
-private:
     static void prepare(QTextDocument &doc, const QString &markup, const QColor &color, int width)
     {
         doc.setDocumentMargin(0);
@@ -219,12 +217,14 @@ public:
             return QImage();
         }
 
-        QImage image(size, QImage::Format_RGB32);
-        image.fill(Qt::black);
-        QPainter p(&image);
-        p.setRenderHint(QPainter::TextAntialiasing);
-        p.setRenderHint(QPainter::Antialiasing);
+        return SlideBackground::compose(size, m_background, m_backgroundImage, [&](QPainter &p) {
+            paint(p, index, size);
+        });
+    }
 
+private:
+    void paint(QPainter &p, int index, const QSize &size)
+    {
         const Layout l = layoutFor(size);
 
         // Text: largest font size that fits
@@ -248,16 +248,14 @@ public:
         QFont font = QApplication::font();
         font.setPixelSize(qMax(8, size.height() / 28));
         p.setFont(font);
-        p.setPen(QColor(170, 170, 170));
+        p.setPen(m_background.mutedColor());
         QString reference = m_passage.reference();
         if (!m_passage.abbreviation.isEmpty()) {
             reference += QStringLiteral(" (%1)").arg(m_passage.abbreviation);
         }
         p.drawText(l.footer, Qt::AlignRight | Qt::AlignVCenter, reference);
-        return image;
     }
 
-private:
     struct Layout {
         QRect text;
         QRect footer;
@@ -334,6 +332,17 @@ private:
 };
 
 } // namespace
+
+void SlideDeck::setBackground(const SlideBackground &background)
+{
+    m_background = background.resolved(SlideBackground());
+    m_backgroundImage = m_background.kind == SlideBackground::Image ? QImage(m_background.path) : QImage();
+    // Photos are often much larger than any projector: smaller once instead of on every slide
+    if (m_backgroundImage.width() > 3840 || m_backgroundImage.height() > 2160) {
+        m_backgroundImage = m_backgroundImage.scaled(3840, 2160, Qt::KeepAspectRatioByExpanding,
+                                                     Qt::SmoothTransformation);
+    }
+}
 
 std::unique_ptr<SlideDeck> SlideDeck::createBible(const BiblePassage &passage)
 {

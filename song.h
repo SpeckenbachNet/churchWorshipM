@@ -16,6 +16,8 @@
  */
 #pragma once
 
+#include "slidebackground.h"
+
 #include <QColor>
 #include <QDateTime>
 #include <QJsonObject>
@@ -63,6 +65,7 @@ struct Song {
                                  // "V3@<song id>": part of a linked song (other language)
     QString         language = defaultLanguage();   // ISO code: "de", "en", ...
     QString         group;       // songs with the same group are translations of each other
+    SlideBackground background;  // own background in every event; Inherit = the event's
     QDateTime       modified;
 
     bool isValid() const { return !id.isEmpty(); }

@@ -26,6 +26,8 @@
 #include <QString>
 #include <QTime>
 
+#include "slidebackground.h"
+
 // One event (service, concert, ...) or a template for new events
 struct EventInfo {
     QString   id;                  // UUID
@@ -33,6 +35,7 @@ struct EventInfo {
     QDate     date;                // empty for templates
     QTime     time;
     QString   note;
+    SlideBackground background{SlideBackground::Black};   // default of the text slides
     bool      isTemplate = false;
     int       itemCount = 0;       // number of playlist entries (read only)
     QDateTime modified;
@@ -43,7 +46,7 @@ struct EventInfo {
 
 // All events and templates with their playlists.
 //   <AppData>/events/events.sqlite
-//     events (id, name, date, time, note, template, modified)
+//     events (id, name, date, time, note, template, modified, background)   background = JSON
 //     items  (event, pos, item)       item = playlist entry as JSON (same format as in *.cwm)
 // A template is an event without date; new events copy its playlist.
 class EventStore : public QObject {
@@ -62,7 +65,7 @@ public:
 
     // Returns the id of the new event; 'items' is the initial playlist
     QString create(EventInfo info, const QJsonArray &items = {});
-    bool    update(const EventInfo &info);   // name, date, time, note
+    bool    update(const EventInfo &info);   // name, date, time, note, background
     bool    remove(const QString &id);
 
     QJsonArray items(const QString &id) const;

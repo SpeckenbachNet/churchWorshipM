@@ -15,6 +15,7 @@
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
 #include "eventdialog.h"
+#include "backgroundpicker.h"
 
 #include <QComboBox>
 #include <QDateEdit>
@@ -35,7 +36,7 @@ const QString kTimeParsing = QStringLiteral("H:mm");   // also accepts "9:30" wh
 
 EventDialog::EventDialog(const EventInfo &info, const QList<EventInfo> &templates, QWidget *parent)
     : QDialog(parent),
-    m_info(info)
+    m_info(info), m_templates(templates)
 {
     const bool isNew = !info.isValid();
     if (info.isTemplate) {
@@ -43,7 +44,7 @@ EventDialog::EventDialog(const EventInfo &info, const QList<EventInfo> &template
     } else {
         setWindowTitle(isNew ? tr("New event") : tr("Event properties"));
     }
-    resize(520, 420);
+    resize(560, 500);
 
     // Text fields: some room between frame and text (the native style puts the text at the edge)
     setStyleSheet(QStringLiteral("QLineEdit, QAbstractSpinBox { padding: 4px 6px; }"));
@@ -73,6 +74,10 @@ EventDialog::EventDialog(const EventInfo &info, const QList<EventInfo> &template
 
     m_noteEdit = new QPlainTextEdit(info.note, this);
     m_noteEdit->document()->setDocumentMargin(8);
+
+    m_background = new BackgroundPicker(QString(), this);
+    m_background->setBackground(info.background);
+    m_suggestedBackground = info.background;
 
     auto *buttons = new QDialogButtonBox(QDialogButtonBox::Ok | QDialogButtonBox::Cancel, this);
     connect(buttons, &QDialogButtonBox::accepted, this, &QDialog::accept);
@@ -121,10 +126,27 @@ EventDialog::EventDialog(const EventInfo &info, const QList<EventInfo> &template
                 m_nameEdit->setText(name);
             }
             m_suggestedName = name;
+            // The template's background as well, unless another one was chosen already
+            if (m_background->background() == m_suggestedBackground) {
+                SlideBackground bg{SlideBackground::Black};
+                for (const EventInfo &t : m_templates) {
+                    if (t.id == m_templateCombo->itemData(index).toString()) {
+                        bg = t.background;
+                    }
+                }
+                m_background->setBackground(bg);
+                m_suggestedBackground = bg;
+            }
         });
         m_templateCombo->setCurrentIndex(1);   // with templates, the first one is the usual start
     }
     form->addRow(tr("Note:"), m_noteEdit);
+    form->addRow(tr("Background:"), m_background);
+    auto *backgroundHint = new QLabel(tr("For songs, bible texts and own slides. Songs and single entries "
+                                         "can have their own."), this);
+    backgroundHint->setEnabled(false);   // muted
+    backgroundHint->setWordWrap(true);
+    form->addRow(QString(), backgroundHint);
 
     auto *layout = new QVBoxLayout(this);
     layout->setContentsMargins(20, 20, 20, 16);
@@ -141,6 +163,7 @@ EventInfo EventDialog::info() const
     EventInfo e = m_info;
     e.name = m_nameEdit->text().trimmed();
     e.note = m_noteEdit->toPlainText().trimmed();
+    e.background = m_background->background();
     if (!e.isTemplate) {
         e.date = m_dateEdit->date();
         e.time = time();

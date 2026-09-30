@@ -126,6 +126,12 @@ void TextSlideDialog::setText(const QString &text)
     updatePreview();
 }
 
+void TextSlideDialog::setPreviewBackground(const SlideBackground &background)
+{
+    m_background = background;
+    updatePreview();
+}
+
 QString TextSlideDialog::title() const
 {
     const QString title = m_titleEdit->text().trimmed();
@@ -159,6 +165,7 @@ void TextSlideDialog::updatePreview()
         m_count->setText(error);
         return;
     }
+    deck->setBackground(m_background);
     const qreal dpr = devicePixelRatioF();
     for (int i = 0; i < deck->count(); ++i) {
         QImage image = deck->render(i, kPreviewSize * dpr);

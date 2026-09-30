@@ -15,6 +15,7 @@
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
 #include "songeditor.h"
+#include "backgroundpicker.h"
 #include "richtextedit.h"
 #include "searchfield.h"
 #include "songstore.h"
@@ -191,6 +192,13 @@ SongEditorDialog::SongEditorDialog(const Song &song, const QStringList &order, M
     linksBox->addLayout(links);
     linksBox->addWidget(m_missingLabel);
     data->addRow(tr("Translations:"), linksBox);
+    if (m_mode == Library) {
+        m_background = new BackgroundPicker(tr("None"), this);
+        m_background->setBackground(song.background);
+        m_background->setToolTip(tr("Used in every event unless the entry has its own. "
+                                    "\"None\": the background of the event."));
+        data->addRow(tr("Background:"), m_background);
+    }
 
     // --- Parts (left) and text of the selected part (right)
     m_parts = new QListWidget(this);
@@ -313,7 +321,7 @@ SongEditorDialog::SongEditorDialog(const Song &song, const QStringList &order, M
         layout->addWidget(note);
     }
     layout->addWidget(buttons);
-    resize(820, 680);
+    resize(820, m_mode == Library ? 780 : 720);
 
     // --- Content
     refreshPartList();
@@ -628,6 +636,9 @@ Song SongEditorDialog::song() const
     }
     s.ccliNumber = m_ccli->text().trimmed();
     s.language = m_language->currentData().toString();
+    if (m_background) {
+        s.background = m_background->background();
+    }
     s.order = order();
     return s;
 }

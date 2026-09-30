@@ -92,6 +92,9 @@ private:
     void fetchYouTubeTitle(const QString &url);
     void fetchYouTubeThumbnail(const QString &videoId);
     void editEntry(QListWidgetItem *item);
+    void editEntryBackground(QListWidgetItem *item);
+    SlideBackground entryBackground(const QListWidgetItem *item) const;   // resolved, with current path
+    SlideBackground defaultBackground(const QListWidgetItem *item) const; // song's, otherwise the event's
     void removeSelected();
     void moveSelected(int delta);
     QListWidgetItem *createEntry(const QString &title, MediaItem::Type type,
@@ -172,6 +175,8 @@ private:
     EventHeader           *m_eventHeader = nullptr;
 
     QString m_eventId;                   // open event (empty = none)
+    SlideBackground m_eventBackground;   // of the open event: text slides are redrawn when it changes
+    SlideBackground m_shownBackground;   // of the entry shown (Inherit: no text entry)
     bool    m_loading  = false;          // suppresses saving while a playlist is loaded
     bool    m_unsaved  = false;          // playlist changed since the last save
     QTimer  m_saveTimer;                 // collects the changes of one user action into one save

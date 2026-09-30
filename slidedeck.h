@@ -18,6 +18,7 @@
 
 #include "biblepassage.h"
 #include "mediaitem.h"
+#include "slidebackground.h"
 
 #include <QImage>
 #include <QSize>
@@ -36,6 +37,10 @@ public:
     // Renders slide 'index' as large as possible inside 'maxSize' (aspect ratio is kept)
     virtual QImage render(int index, const QSize &maxSize) = 0;
 
+    // Text slides only: color or image behind the text ('background' must not be Inherit;
+    // the image is loaded from 'background.path')
+    void setBackground(const SlideBackground &background);
+
     // Returns nullptr and fills 'error' if the entry cannot be loaded
     // 'bible' is only used for bible entries selected from an installed bible (BiblePassage JSON)
     // 'credits' (text entries): small lines at the bottom of the first slide, e.g. the
@@ -51,4 +56,8 @@ public:
 
     // Aspect ratio used for text slides
     static constexpr QSize textSlideAspect{16, 9};
+
+protected:
+    SlideBackground m_background{SlideBackground::Black};
+    QImage          m_backgroundImage;
 };

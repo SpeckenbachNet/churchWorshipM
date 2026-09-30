@@ -247,6 +247,7 @@ QString SongStore::importSongSelect(const QString &path, QString *licence, QStri
         imported.id = existing.id;
         imported.language = existing.language;
         imported.group = existing.group;
+        imported.background = existing.background;
         const bool orderFits = std::all_of(existing.order.begin(), existing.order.end(),
                                            [&](const QString &id) {
                                                // parts of linked songs are not affected

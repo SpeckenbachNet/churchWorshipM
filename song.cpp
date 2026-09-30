@@ -370,6 +370,9 @@ QJsonObject Song::toJson() const
     if (!group.isEmpty()) {
         o.insert("group", group);
     }
+    if (!background.isInherit()) {
+        o.insert("background", background.toJson());
+    }
     return o;
 }
 
@@ -382,6 +385,7 @@ Song Song::fromJson(const QJsonObject &o)
     s.ccliNumber = o.value("ccli").toString();
     s.language = o.value("language").toString(defaultLanguage());
     s.group = o.value("group").toString();
+    s.background = SlideBackground::fromJson(o.value("background").toObject());
     for (const QJsonValue &v : o.value("parts").toArray()) {
         s.parts << SongPart::fromJson(v.toObject());
     }

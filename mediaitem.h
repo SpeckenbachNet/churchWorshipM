@@ -41,7 +41,8 @@ enum Role {
     TextRole,                     // slide text (text based types)
     BibleRole,                    // QJsonObject of a BiblePassage (bible entries chosen on the bible page)
     LibraryRole,                  // id of the media library entry (file based types)
-    SongRole                      // QJsonObject {id, order} of a song from the song library
+    SongRole,                     // QJsonObject {id, order} of a song from the song library
+    BackgroundRole                // QJsonObject of the own SlideBackground (text types), empty = as event
 };
 
 Type    typeFromFile(const QString &path);
