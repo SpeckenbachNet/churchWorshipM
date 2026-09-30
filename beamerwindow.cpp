@@ -19,6 +19,7 @@
 #include <QGuiApplication>
 #include <QPainter>
 #include <QScreen>
+#include <QWebEnginePage>
 #include <QWebEngineSettings>
 #include <QWebEngineView>
 #include <QWindow>
@@ -73,9 +74,12 @@ void BeamerWindow::loadYouTube(const QString &videoId)
     if (!m_webView) {
         m_webView = new QWebEngineView(this);
         m_webView->setFocusPolicy(Qt::NoFocus);
-        // Allow play() from our JavaScript without a click into the page
-        m_webView->settings()->setAttribute(QWebEngineSettings::PlaybackRequiresUserGesture, false);
     }
+    // A fresh page for every video: loaded a second time into the same page, the YouTube
+    // API never creates the player. The old page is a child of the view, setPage() deletes it.
+    m_webView->setPage(new QWebEnginePage(m_webView));
+    // Allow play() from our JavaScript without a click into the page
+    m_webView->settings()->setAttribute(QWebEngineSettings::PlaybackRequiresUserGesture, false);
     m_webView->setHtml(QString::fromLatin1(kYouTubeHtml).arg(videoId), kYouTubeOrigin);
     m_webView->setGeometry(rect());
     m_videoMode = true;

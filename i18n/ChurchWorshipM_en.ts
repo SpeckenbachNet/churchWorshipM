@@ -1167,6 +1167,11 @@ Please make sure your church may use this translation (e.g. for projection in se
         <translation type="unfinished"></translation>
     </message>
     <message>
+        <location filename="../mainwin.cpp" line="1226"/>
+        <source>Black slide before the text</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
         <location filename="../mainwin.cpp" line="437"/>
         <location filename="../mainwin.cpp" line="444"/>
         <location filename="../mainwin.cpp" line="447"/>
@@ -1187,6 +1192,7 @@ Please make sure your church may use this translation (e.g. for projection in se
     </message>
     <message>
         <location filename="../mainwin.cpp" line="461"/>
+        <location filename="../mainwin.cpp" line="1221"/>
         <source>Blank</source>
         <translation type="unfinished"></translation>
     </message>
@@ -1414,38 +1420,53 @@ Please install PowerPoint, OnlyOffice or LibreOffice, or export the presentation
 <context>
     <name>SettingsPage</name>
     <message>
-        <location filename="../settingspage.cpp" line="32"/>
+        <location filename="../settingspage.cpp" line="33"/>
         <source>When files are added to the media library:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../settingspage.cpp" line="34"/>
+        <location filename="../settingspage.cpp" line="35"/>
         <source>Copy into the media library (recommended)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../settingspage.cpp" line="35"/>
+        <location filename="../settingspage.cpp" line="36"/>
         <source>The playlist keeps working even if the original is moved or the USB stick is missing. If the original changes, the media library offers to update the copy.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../settingspage.cpp" line="38"/>
+        <location filename="../settingspage.cpp" line="39"/>
         <source>Link only – the file stays where it is</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../settingspage.cpp" line="39"/>
+        <location filename="../settingspage.cpp" line="40"/>
         <source>Useful for a shared cloud folder: the newest version is always shown automatically. The file has to be available during the service.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../settingspage.cpp" line="71"/>
+        <location filename="../settingspage.cpp" line="68"/>
+        <source>Black slide at the beginning of songs, bible texts and own slides</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../settingspage.cpp" line="70"/>
+        <source>Nothing is shown on the projector when the entry is chosen; the text appears with the next click.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../settingspage.cpp" line="95"/>
         <source>Bibles</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../settingspage.cpp" line="72"/>
+        <location filename="../settingspage.cpp" line="96"/>
         <source>Media library</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../settingspage.cpp" line="97"/>
+        <source>Slides</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -1457,17 +1478,17 @@ Please install PowerPoint, OnlyOffice or LibreOffice, or export the presentation
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../slidedeck.cpp" line="368"/>
+        <location filename="../slidedeck.cpp" line="402"/>
         <source>The image could not be loaded.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../slidedeck.cpp" line="381"/>
+        <location filename="../slidedeck.cpp" line="415"/>
         <source>The presentation has not been converted yet.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../slidedeck.cpp" line="393"/>
+        <location filename="../slidedeck.cpp" line="427"/>
         <source>Unsupported file type.</source>
         <translation type="unfinished"></translation>
     </message>

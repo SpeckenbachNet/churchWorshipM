@@ -1194,27 +1194,36 @@ void MainWin::showEntry(QListWidgetItem *item) {
     }
 
     m_shownBackground = SlideBackground();
-    if (MediaItem::isTextType(MediaItem::Type(item->data(MediaItem::TypeRole).toInt()))) {
+    const bool textEntry = MediaItem::isTextType(MediaItem::Type(item->data(MediaItem::TypeRole).toInt()));
+    if (textEntry) {
         m_shownBackground = entryBackground(item);
         m_deck->setBackground(m_shownBackground);
     }
-
-    // Thumbnails
-    const qreal dpr = devicePixelRatioF();
     // Songs: the part of every slide as label ("Vers 1", "Chorus", ...)
     QStringList labels = songSlideLabels(item);
     if (labels.size() != m_deck->count()) {
         labels.clear();   // lyrics of the entry differ from the library (copy only)
     }
+    // Text entries start black: nothing is shown before the first text
+    const int blanks = textEntry && settings.value("slides/leadingBlank", true).toBool() ? 1 : 0;
+    if (blanks) {
+        m_deck = SlideDeck::withLeadingBlank(std::move(m_deck));
+    }
+
+    // Thumbnails
+    const qreal dpr = devicePixelRatioF();
     for (int i = 0; i < m_deck->count(); ++i) {
         QImage thumb = m_deck->render(i, kThumbSize * dpr);
         thumb.setDevicePixelRatio(dpr);
-        QString label = QString::number(i + 1);
-        if (!labels.isEmpty()) {
-            label = labels.at(i);
+        const int textIndex = i - blanks;
+        QString label = QString::number(textIndex + 1);
+        if (textIndex < 0) {
+            label = tr("Blank");
+        } else if (!labels.isEmpty()) {
+            label = labels.at(textIndex);
         }
         auto *slide = new QListWidgetItem(QIcon(QPixmap::fromImage(thumb)), label);
-        slide->setToolTip(QString::number(i + 1));
+        slide->setToolTip(textIndex < 0 ? tr("Black slide before the text") : QString::number(textIndex + 1));
         ui->slidesListWidget->addItem(slide);
     }
 

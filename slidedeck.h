@@ -54,6 +54,10 @@ public:
     // Bible passage directly (used for the preview on the bible page)
     static std::unique_ptr<SlideDeck> createBible(const BiblePassage &passage);
 
+    // The same slides with a black slide in front (text entries: nothing shown before the
+    // first text). Slide i of 'deck' becomes slide i + 1. For text slides only (16:9 size).
+    static std::unique_ptr<SlideDeck> withLeadingBlank(std::unique_ptr<SlideDeck> deck);
+
     // Aspect ratio used for text slides
     static constexpr QSize textSlideAspect{16, 9};
 
