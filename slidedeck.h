@@ -40,9 +40,11 @@ public:
     // 'bible' is only used for bible entries selected from an installed bible (BiblePassage JSON)
     // 'credits' (text entries): small lines at the bottom of the first slide, e.g. the
     // copyright and CCLI numbers of a song
+    // 'translation' (songs): text per slide, shown smaller and gray below the lyrics
     static std::unique_ptr<SlideDeck> create(MediaItem::Type type, const QString &source,
                                              const QString &text, const QJsonObject &bible,
-                                             QString *error, const QString &credits = {});
+                                             QString *error, const QString &credits = {},
+                                             const QStringList &translation = {});
 
     // Bible passage directly (used for the preview on the bible page)
     static std::unique_ptr<SlideDeck> createBible(const BiblePassage &passage);

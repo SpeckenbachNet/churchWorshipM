@@ -39,6 +39,18 @@ struct SongPart {
     static SongPart fromJson(const QJsonObject &o);
 };
 
+struct Song;
+
+// One slide of an arranged song
+struct SongSlide {
+    SongPart part;       // part the slide belongs to
+    QString  songId;     // song of the part: a verse can be sung in another language
+    QString  language;
+    QString  text;       // lyrics (TextMarkup)
+    QString  below;      // translation shown smaller below, empty for none
+    bool     foreign = false;   // part of a linked song, not of the arranged song itself
+};
+
 // A song of the song library
 struct Song {
     QString         id;          // UUID
@@ -47,7 +59,10 @@ struct Song {
     QString         copyright;
     QString         ccliNumber;  // CCLI song number, empty for own songs
     QList<SongPart> parts;       // every part once
-    QStringList     order;       // part ids in the order they are sung, may repeat
+    QStringList     order;       // part ids in the order they are sung, may repeat;
+                                 // "V3@<song id>": part of a linked song (other language)
+    QString         language = defaultLanguage();   // ISO code: "de", "en", ...
+    QString         group;       // songs with the same group are translations of each other
     QDateTime       modified;
 
     bool isValid() const { return !id.isEmpty(); }
@@ -57,17 +72,30 @@ struct Song {
     // An empty order means every part once in the stored sequence.
     QList<SongPart> arrangedParts(const QStringList &order = {}) const;
 
-    // Text for the slide display: one slide per part, a line "---" splits a part.
-    // Slides are separated by an empty line (format of the text entries).
-    QString slideText(const QStringList &order = {}) const;
+    // The slides: one per part, a line "---" or an empty line splits a part.
+    // 'linked': songs linked with this one, for parts of the order in another language.
+    // 'translation' (if set) is shown below: matched by part id (V1 - V1), within a part
+    // slide by slide. Below a part of a linked song the song itself is shown.
+    QList<SongSlide> slides(const QStringList &order = {}, const QList<Song> &linked = {},
+                            const Song *translation = nullptr) const;
+    // Slide text of an entry: slides separated by an empty line
+    static QString slideText(const QList<SongSlide> &slides);
 
     QString allText() const;   // every part once, for the full text search
 
-    // The part of every slide of slideText(order), e.g. for labels of the thumbnails
-    QList<SongPart> slideParts(const QStringList &order = {}) const;
+    // Parts of the order that the translation does not have (each once, own parts only)
+    QList<SongPart> missingIn(const Song &translation, const QStringList &order = {}) const;
 
     QJsonObject toJson() const;
     static Song fromJson(const QJsonObject &o);
+
+    // Order ids of parts of linked songs: "V3@<song id>"
+    static QString foreignPartId(const QString &partId, const QString &songId);
+    static QString splitPartId(const QString &id, QString *songId);   // songId empty: own part
+
+    static QString     defaultLanguage() { return QStringLiteral("de"); }
+    static QStringList languages();                        // codes offered for selection
+    static QString     languageName(const QString &code);  // translated, e.g. "Englisch"
 
     // SongSelect "Lyrics" download (*.txt). The church licence number printed in the
     // footer is returned in 'licence'. Returns an invalid song (empty title) on failure.

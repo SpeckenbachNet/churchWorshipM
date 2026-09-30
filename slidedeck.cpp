@@ -88,8 +88,8 @@ private:
 
 class TextDeck : public SlideDeck {
 public:
-    explicit TextDeck(const QString &text, const QString &credits = {})
-        : m_credits(credits)
+    explicit TextDeck(const QString &text, const QString &credits = {}, const QStringList &translation = {})
+        : m_credits(credits), m_translation(translation)
     {
         static const QRegularExpression separator(QStringLiteral(R"(\n\s*\n)"));
         for (const QString &block : text.split(separator, Qt::SkipEmptyParts)) {
@@ -125,7 +125,7 @@ public:
         // Credits (copyright, CCLI) small at the bottom of the first slide
         if (index == 0 && !m_credits.isEmpty()) {
             QFont small = QApplication::font();
-            small.setPixelSize(qMax(7, size.height() / 36));
+            small.setPixelSize(qMax(6, size.height() / 54));
             const QFontMetrics fm(small);
             const int lines = int(m_credits.count('\n')) + 1;
             const int height = lines * fm.lineSpacing();
@@ -139,37 +139,63 @@ public:
         }
         // Formatted text (bold / italic / underline), every line centered
         QTextDocument doc;
+        prepare(doc, m_pages.at(index), Qt::white, area.width());
+        // Translation below, half the size and gray
+        const QString translated = m_translation.value(index).trimmed();
+        QTextDocument trans;
+        prepare(trans, translated, QColor(150, 150, 150), area.width());
+
+        // Largest font size where the whole text fits; a single word is never broken
+        int pixelSize = size.height() / 9;
+        for (; pixelSize > 6; pixelSize -= qMax(1, pixelSize / 20)) {
+            if (layout(doc, trans, translated.isEmpty(), pixelSize) <= area.height()
+                && doc.idealWidth() <= area.width() && trans.idealWidth() <= area.width()) {
+                break;
+            }
+        }
+        const qreal height = layout(doc, trans, translated.isEmpty(), pixelSize);
+
+        const qreal top = qMax<qreal>(area.top(), area.top() + (area.height() - height) / 2.0);
+        p.translate(area.left(), top);
+        doc.drawContents(&p);
+        if (!translated.isEmpty()) {
+            p.translate(0, height - trans.size().height());
+            trans.drawContents(&p);
+        }
+        return image;
+    }
+
+private:
+    static void prepare(QTextDocument &doc, const QString &markup, const QColor &color, int width)
+    {
         doc.setDocumentMargin(0);
         QTextOption option(Qt::AlignHCenter);
         option.setWrapMode(QTextOption::WordWrap);
         doc.setDefaultTextOption(option);
         QTextCharFormat base;
-        base.setForeground(Qt::white);
-        TextMarkup::fillDocument(&doc, m_pages.at(index), base);
-        doc.setTextWidth(area.width());
-
-        // Largest font size where the whole text fits; a single word is never broken
-        QFont font = QApplication::font();
-        int pixelSize = size.height() / 9;
-        for (; pixelSize > 6; pixelSize -= qMax(1, pixelSize / 20)) {
-            font.setPixelSize(pixelSize);
-            doc.setDefaultFont(font);
-            if (doc.size().height() <= area.height() && doc.idealWidth() <= area.width()) {
-                break;
-            }
-        }
-        font.setPixelSize(pixelSize);
-        doc.setDefaultFont(font);
-
-        const qreal top = area.top() + (area.height() - doc.size().height()) / 2.0;
-        p.translate(area.left(), qMax<qreal>(area.top(), top));
-        doc.drawContents(&p);
-        return image;
+        base.setForeground(color);
+        TextMarkup::fillDocument(&doc, markup, base);
+        doc.setTextWidth(width);
     }
 
-private:
+    // Applies the font size, returns the height of lyrics + translation
+    static qreal layout(QTextDocument &doc, QTextDocument &trans, bool noTranslation, int pixelSize)
+    {
+        QFont font = QApplication::font();
+        font.setPixelSize(pixelSize);
+        doc.setDefaultFont(font);
+        if (noTranslation) {
+            return doc.size().height();
+        }
+        font.setPixelSize(qMax(6, pixelSize / 2));
+        trans.setDefaultFont(font);
+        const qreal gap = pixelSize * 0.6;
+        return doc.size().height() + gap + trans.size().height();
+    }
+
     QStringList m_pages;
     QString     m_credits;
+    QStringList m_translation;
 };
 
 // ---------------------------------------------------------------------------
@@ -316,7 +342,8 @@ std::unique_ptr<SlideDeck> SlideDeck::createBible(const BiblePassage &passage)
 
 std::unique_ptr<SlideDeck> SlideDeck::create(MediaItem::Type type, const QString &source,
                                              const QString &text, const QJsonObject &bible,
-                                             QString *error, const QString &credits)
+                                             QString *error, const QString &credits,
+                                             const QStringList &translation)
 {
     if (type == MediaItem::Bible && !bible.isEmpty()) {
         const BiblePassage passage = BiblePassage::fromJson(bible);
@@ -349,7 +376,7 @@ std::unique_ptr<SlideDeck> SlideDeck::create(MediaItem::Type type, const QString
         return deck->load(pdf, error) ? std::move(deck) : nullptr;
     }
     case MediaItem::Song:
-        return std::make_unique<TextDeck>(text, credits);
+        return std::make_unique<TextDeck>(text, credits, translation);
     case MediaItem::Bible:
     case MediaItem::Custom:
         return std::make_unique<TextDeck>(text);

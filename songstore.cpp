@@ -155,6 +155,79 @@ bool SongStore::remove(const QString &id)
     return true;
 }
 
+QList<Song> SongStore::translations(const QString &id) const
+{
+    const QString group = m_songs.value(id).group;
+    QList<Song> list;
+    if (group.isEmpty()) {
+        return list;
+    }
+    for (const Song &s : m_songs) {
+        if (s.group == group && s.id != id) {
+            list << s;
+        }
+    }
+    std::sort(list.begin(), list.end(), [](const Song &a, const Song &b) {
+        const int c = Song::languageName(a.language).localeAwareCompare(Song::languageName(b.language));
+        return c != 0 ? c < 0 : a.title.localeAwareCompare(b.title) < 0;
+    });
+    return list;
+}
+
+bool SongStore::setTranslations(const QString &id, const QStringList &linkedIds)
+{
+    if (!m_songs.contains(id)) {
+        return false;
+    }
+    QStringList members;   // the new group
+    for (const QString &linked : linkedIds) {
+        if (linked != id && m_songs.contains(linked) && !members.contains(linked)) {
+            members << linked;
+        }
+    }
+    const QString oldGroup = m_songs.value(id).group;
+    QString group;
+    if (!members.isEmpty()) {
+        members.prepend(id);
+        group = oldGroup;
+        for (int i = 0; group.isEmpty() && i < members.size(); ++i) {
+            group = m_songs.value(members.at(i)).group;
+        }
+        if (group.isEmpty()) {
+            group = QUuid::createUuid().toString(QUuid::WithoutBraces);
+        }
+    }
+
+    bool ok = true;
+    bool changedAny = false;
+    const auto setGroup = [&](Song s, const QString &g) {
+        if (s.group != g) {
+            s.group = g;
+            ok = save(s) && ok;
+            changedAny = true;
+        }
+    };
+    // Songs that left the links; a single remaining song is no longer linked
+    QStringList rest;
+    for (const Song &s : std::as_const(m_songs)) {
+        if (!s.group.isEmpty() && (s.group == oldGroup || s.group == group) && !members.contains(s.id)
+            && s.id != id) {
+            rest << s.id;
+        }
+    }
+    for (const QString &other : std::as_const(rest)) {
+        setGroup(m_songs.value(other), rest.size() > 1 && members.isEmpty() ? oldGroup : QString());
+    }
+    setGroup(m_songs.value(id), group);
+    for (const QString &member : std::as_const(members)) {
+        setGroup(m_songs.value(member), group);
+    }
+    if (changedAny) {
+        emit changed();
+    }
+    return ok;
+}
+
 QString SongStore::importSongSelect(const QString &path, QString *licence, QString *error)
 {
     QFile file(path);
@@ -172,8 +245,13 @@ QString SongStore::importSongSelect(const QString &path, QString *licence, QStri
     const Song existing = findByCcli(imported.ccliNumber);
     if (existing.isValid()) {
         imported.id = existing.id;
+        imported.language = existing.language;
+        imported.group = existing.group;
         const bool orderFits = std::all_of(existing.order.begin(), existing.order.end(),
-                                           [&](const QString &id) { return imported.partIndex(id) >= 0; });
+                                           [&](const QString &id) {
+                                               // parts of linked songs are not affected
+                                               return id.contains(QLatin1Char('@')) || imported.partIndex(id) >= 0;
+                                           });
         if (orderFits && !existing.order.isEmpty()) {
             imported.order = existing.order;
         }

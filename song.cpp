@@ -223,24 +223,122 @@ QStringList partSlides(const QString &text)
 
 } // namespace
 
-QString Song::slideText(const QStringList &orderOverride) const
+QList<SongSlide> Song::slides(const QStringList &orderOverride, const QList<Song> &linked,
+                              const Song *translation) const
 {
-    QStringList slides;
-    for (const SongPart &part : arrangedParts(orderOverride)) {
-        slides << partSlides(part.text);
+    QStringList ids = !orderOverride.isEmpty() ? orderOverride : order;
+    if (ids.isEmpty()) {
+        for (const SongPart &p : parts) {
+            ids << p.id;
+        }
     }
-    return slides.join(QLatin1String("\n\n"));
-}
+    const auto findSong = [&](const QString &songId) -> const Song * {
+        if (songId.isEmpty()) {
+            return this;
+        }
+        for (const Song &s : linked) {
+            if (s.id == songId) {
+                return &s;
+            }
+        }
+        return nullptr;
+    };
 
-QList<SongPart> Song::slideParts(const QStringList &orderOverride) const
-{
-    QList<SongPart> result;
-    for (const SongPart &part : arrangedParts(orderOverride)) {
-        for (qsizetype i = partSlides(part.text).size(); i > 0; --i) {
-            result << part;
+    QList<SongSlide> result;
+    for (const QString &id : std::as_const(ids)) {
+        QString songId;
+        const QString partId = splitPartId(id, &songId);
+        const Song *source = findSong(songId);
+        const int index = source ? source->partIndex(partId) : -1;
+        if (index < 0) {
+            continue;   // unknown part or song no longer linked
+        }
+        const SongPart &part = source->parts.at(index);
+        const bool foreign = source != this;
+
+        // Below: the translation, below a part in another language the song itself
+        const Song *belowSong = !translation ? nullptr : (foreign ? this : translation);
+        const int belowIndex = belowSong ? belowSong->partIndex(partId) : -1;
+        const QStringList belowSlides = belowIndex >= 0 ? partSlides(belowSong->parts.at(belowIndex).text)
+                                                        : QStringList();
+
+        const QStringList texts = partSlides(part.text);
+        const int count = int(texts.size());
+        for (int i = 0; i < count; ++i) {
+            SongSlide slide;
+            slide.part = part;
+            slide.songId = source->id;
+            slide.language = source->language;
+            slide.text = texts.at(i);
+            slide.foreign = foreign;
+            if (i == count - 1 && belowSlides.size() > count) {
+                slide.below = belowSlides.mid(i).join('\n');   // translation split finer: rest on the last slide
+            } else {
+                slide.below = belowSlides.value(i);
+            }
+            result << slide;
         }
     }
     return result;
+}
+
+QString Song::slideText(const QList<SongSlide> &slides)
+{
+    QStringList texts;
+    for (const SongSlide &slide : slides) {
+        texts << slide.text;
+    }
+    return texts.join(QLatin1String("\n\n"));
+}
+
+QString Song::foreignPartId(const QString &partId, const QString &songId)
+{
+    return partId + QLatin1Char('@') + songId;
+}
+
+QString Song::splitPartId(const QString &id, QString *songId)
+{
+    const qsizetype at = id.indexOf(QLatin1Char('@'));
+    *songId = at < 0 ? QString() : id.mid(at + 1);
+    return at < 0 ? id : id.left(at);
+}
+
+QList<SongPart> Song::missingIn(const Song &translation, const QStringList &orderOverride) const
+{
+    QList<SongPart> missing;
+    QStringList seen;
+    for (const SongPart &part : arrangedParts(orderOverride)) {
+        if (!seen.contains(part.id) && translation.partIndex(part.id) < 0) {
+            missing << part;
+        }
+        seen << part.id;
+    }
+    return missing;
+}
+
+QStringList Song::languages()
+{
+    return {"de", "en", "fr", "es", "it", "nl", "pt", "pl", "ru", "uk", "ro", "tr", "ar", "fa", "zh", "ko"};
+}
+
+QString Song::languageName(const QString &code)
+{
+    static const struct { const char *code; const char *name; } names[] = {
+        {"de", QT_TRANSLATE_NOOP("Song", "German")},     {"en", QT_TRANSLATE_NOOP("Song", "English")},
+        {"fr", QT_TRANSLATE_NOOP("Song", "French")},     {"es", QT_TRANSLATE_NOOP("Song", "Spanish")},
+        {"it", QT_TRANSLATE_NOOP("Song", "Italian")},    {"nl", QT_TRANSLATE_NOOP("Song", "Dutch")},
+        {"pt", QT_TRANSLATE_NOOP("Song", "Portuguese")}, {"pl", QT_TRANSLATE_NOOP("Song", "Polish")},
+        {"ru", QT_TRANSLATE_NOOP("Song", "Russian")},    {"uk", QT_TRANSLATE_NOOP("Song", "Ukrainian")},
+        {"ro", QT_TRANSLATE_NOOP("Song", "Romanian")},   {"tr", QT_TRANSLATE_NOOP("Song", "Turkish")},
+        {"ar", QT_TRANSLATE_NOOP("Song", "Arabic")},     {"fa", QT_TRANSLATE_NOOP("Song", "Persian")},
+        {"zh", QT_TRANSLATE_NOOP("Song", "Chinese")},    {"ko", QT_TRANSLATE_NOOP("Song", "Korean")},
+    };
+    for (const auto &n : names) {
+        if (code == QLatin1String(n.code)) {
+            return QCoreApplication::translate("Song", n.name);
+        }
+    }
+    return code;
 }
 
 QString Song::allText() const
@@ -268,6 +366,10 @@ QJsonObject Song::toJson() const
     if (!ccliNumber.isEmpty()) {
         o.insert("ccli", ccliNumber);
     }
+    o.insert("language", language);
+    if (!group.isEmpty()) {
+        o.insert("group", group);
+    }
     return o;
 }
 
@@ -278,6 +380,8 @@ Song Song::fromJson(const QJsonObject &o)
     s.authors = o.value("authors").toString();
     s.copyright = o.value("copyright").toString();
     s.ccliNumber = o.value("ccli").toString();
+    s.language = o.value("language").toString(defaultLanguage());
+    s.group = o.value("group").toString();
     for (const QJsonValue &v : o.value("parts").toArray()) {
         s.parts << SongPart::fromJson(v.toObject());
     }

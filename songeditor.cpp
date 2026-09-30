@@ -16,8 +16,11 @@
  */
 #include "songeditor.h"
 #include "richtextedit.h"
+#include "searchfield.h"
+#include "songstore.h"
 
 #include <QCheckBox>
+#include <QComboBox>
 #include <QDialogButtonBox>
 #include <QFormLayout>
 #include <QHBoxLayout>
@@ -74,10 +77,59 @@ public:
     }
 };
 
+QString songCaption(const Song &song)
+{
+    return QStringLiteral("%1 (%2)").arg(song.title, Song::languageName(song.language));
+}
+
+// Choosing a song of the library to link with; returns its id or an empty string
+QString pickSong(QWidget *parent, const QList<Song> &songs)
+{
+    QDialog dlg(parent);
+    dlg.setWindowTitle(SongEditorDialog::tr("Link translation"));
+    auto *search = new SearchField(&dlg);
+    search->setPlaceholderText(SongEditorDialog::tr("Search title..."));
+    auto *list = new QListWidget(&dlg);
+    for (const Song &s : songs) {
+        auto *item = new QListWidgetItem(songCaption(s), list);
+        item->setData(kIdRole, s.id);
+    }
+    auto *buttons = new QDialogButtonBox(QDialogButtonBox::Ok | QDialogButtonBox::Cancel, &dlg);
+    QPushButton *ok = buttons->button(QDialogButtonBox::Ok);
+    ok->setEnabled(false);
+
+    auto *layout = new QVBoxLayout(&dlg);
+    layout->setContentsMargins(20, 20, 20, 16);
+    layout->setSpacing(10);
+    layout->addWidget(search);
+    layout->addWidget(list, 1);
+    layout->addWidget(buttons);
+    dlg.resize(420, 460);
+
+    QObject::connect(search, &QLineEdit::textChanged, list, [list](const QString &text) {
+        for (int i = 0; i < list->count(); ++i) {
+            list->item(i)->setHidden(!list->item(i)->text().contains(text.trimmed(), Qt::CaseInsensitive));
+        }
+    });
+    QObject::connect(list, &QListWidget::currentItemChanged, ok, [ok](QListWidgetItem *item) {
+        ok->setEnabled(item);
+    });
+    QObject::connect(list, &QListWidget::itemActivated, &dlg, &QDialog::accept);
+    QObject::connect(buttons, &QDialogButtonBox::accepted, &dlg, &QDialog::accept);
+    QObject::connect(buttons, &QDialogButtonBox::rejected, &dlg, &QDialog::reject);
+    search->setFocus();
+
+    if (dlg.exec() != QDialog::Accepted || !list->currentItem()) {
+        return {};
+    }
+    return list->currentItem()->data(kIdRole).toString();
+}
+
 } // namespace
 
-SongEditorDialog::SongEditorDialog(const Song &song, const QStringList &order, Mode mode, QWidget *parent)
-    : QDialog(parent), m_song(song), m_mode(mode)
+SongEditorDialog::SongEditorDialog(const Song &song, const QStringList &order, Mode mode,
+                                   const SongStore *store, QWidget *parent)
+    : QDialog(parent), m_song(song), m_mode(mode), m_store(store)
 {
     setWindowTitle(song.title.isEmpty() ? tr("New song") : tr("Edit song"));
     setStyleSheet(QStringLiteral("QLineEdit { padding: 4px 6px; }"));
@@ -90,16 +142,55 @@ SongEditorDialog::SongEditorDialog(const Song &song, const QStringList &order, M
     m_ccli = new QLineEdit(song.ccliNumber, this);
     m_ccli->setPlaceholderText(tr("empty for own songs"));
 
+    m_language = new QComboBox(this);
+    for (const QString &code : Song::languages()) {
+        m_language->addItem(Song::languageName(code), code);
+    }
+    if (m_language->findData(song.language) < 0) {
+        m_language->addItem(Song::languageName(song.language), song.language);
+    }
+    m_language->setCurrentIndex(m_language->findData(song.language));
+
+    // Translations: other songs of the library linked with this one
+    if (m_store && song.isValid()) {
+        for (const Song &s : m_store->translations(song.id)) {
+            m_linked << s.id;
+        }
+    }
+    m_linkedLabel = new QLabel(this);
+    m_linkedLabel->setWordWrap(true);
+    auto *linkBtn = new QPushButton(tr("Link..."), this);
+    linkBtn->setToolTip(tr("Links this song with the same song in another language"));
+    linkBtn->setEnabled(m_store);
+    m_unlinkBtn = new QPushButton(tr("Unlink"), this);
+    m_unlinkBtn->setToolTip(tr("Removes this song from the linked translations"));
+    m_missingLabel = new QLabel(this);
+    m_missingLabel->setWordWrap(true);
+    m_missingLabel->setEnabled(false);   // muted
+
     auto *data = new QFormLayout;
     data->setFieldGrowthPolicy(QFormLayout::AllNonFixedFieldsGrow);
     data->setVerticalSpacing(10);
-    data->addRow(tr("Title:"), m_title);
+    auto *titleRow = new QHBoxLayout;
+    titleRow->addWidget(m_title, 3);
+    titleRow->addWidget(new QLabel(tr("Language:"), this));
+    titleRow->addWidget(m_language, 1);
+    data->addRow(tr("Title:"), titleRow);
     data->addRow(tr("Authors:"), m_authors);
     auto *rights = new QHBoxLayout;
     rights->addWidget(m_copyright, 3);
     rights->addWidget(new QLabel(tr("CCLI no.:"), this));
     rights->addWidget(m_ccli, 1);
     data->addRow(tr("Copyright:"), rights);
+    auto *links = new QHBoxLayout;
+    links->addWidget(m_linkedLabel, 1);
+    links->addWidget(linkBtn);
+    links->addWidget(m_unlinkBtn);
+    auto *linksBox = new QVBoxLayout;
+    linksBox->setSpacing(4);
+    linksBox->addLayout(links);
+    linksBox->addWidget(m_missingLabel);
+    data->addRow(tr("Translations:"), linksBox);
 
     // --- Parts (left) and text of the selected part (right)
     m_parts = new QListWidget(this);
@@ -164,10 +255,31 @@ SongEditorDialog::SongEditorDialog(const Song &song, const QStringList &order, M
 
     auto *resetBtn = new QPushButton(tr("Every part once"), this);
     resetBtn->setToolTip(tr("Resets the order: every part once in the listed sequence"));
+    // A verse in another language: parts of the linked songs
+    m_foreignBtn = new QPushButton(tr("Part in other language"), this);
+    m_foreignBtn->setToolTip(tr("Appends a part of a linked translation to the order"));
+    auto *foreignMenu = new QMenu(m_foreignBtn);
+    m_foreignBtn->setMenu(foreignMenu);
+    // Filled when opened: rebuilding it while one of its actions runs would delete that action
+    connect(foreignMenu, &QMenu::aboutToShow, this, [this, foreignMenu] {
+        foreignMenu->clear();
+        for (const QString &id : std::as_const(m_linked)) {
+            const Song s = m_store ? m_store->song(id) : Song();
+            if (!s.isValid()) {
+                continue;
+            }
+            QMenu *sub = foreignMenu->addMenu(songCaption(s));
+            for (const SongPart &part : s.parts) {
+                const QString orderId = Song::foreignPartId(part.id, s.id);
+                sub->addAction(part.label(), this, [this, orderId] { appendToOrder(orderId); });
+            }
+        }
+    });
     auto *orderHead = new QHBoxLayout;
     auto *orderLabel = new QLabel(tr("Order (drag to rearrange, Del removes)"), this);
     orderHead->addWidget(orderLabel);
     orderHead->addStretch();
+    orderHead->addWidget(m_foreignBtn);
     orderHead->addWidget(resetBtn);
 
     auto *buttons = new QDialogButtonBox(QDialogButtonBox::Ok | QDialogButtonBox::Cancel, this);
@@ -180,6 +292,19 @@ SongEditorDialog::SongEditorDialog(const Song &song, const QStringList &order, M
     layout->addLayout(orderHead);
     layout->addWidget(m_order);
     if (m_mode == Event) {
+        // Only offered if the song has translations
+        m_translationRow = new QWidget(this);
+        m_showTranslation = new QCheckBox(tr("Show translation below:"), m_translationRow);
+        m_translation = new QComboBox(m_translationRow);
+        auto *row = new QHBoxLayout(m_translationRow);
+        row->setContentsMargins(0, 0, 0, 0);
+        row->addWidget(m_showTranslation);
+        row->addWidget(m_translation);
+        row->addStretch();
+        layout->addWidget(m_translationRow);
+        connect(m_showTranslation, &QCheckBox::toggled, m_translation, &QWidget::setEnabled);
+        m_translation->setEnabled(false);
+
         m_asDefault = new QCheckBox(tr("Use this order as default for the song"), this);
         m_asDefault->setToolTip(tr("Otherwise the order only applies to this event."));
         auto *note = new QLabel(tr("Changes of the lyrics apply to every event."), this);
@@ -216,6 +341,14 @@ SongEditorDialog::SongEditorDialog(const Song &song, const QStringList &order, M
     });
     connect(resetBtn, &QPushButton::clicked, this, &SongEditorDialog::resetOrder);
     connect(m_title, &QLineEdit::textChanged, this, &SongEditorDialog::updateButtons);
+    connect(linkBtn, &QPushButton::clicked, this, &SongEditorDialog::linkSong);
+    connect(m_unlinkBtn, &QPushButton::clicked, this, [this] {
+        m_linked.clear();
+        updateTranslations();
+    });
+    // Parts missing in a translation depend on the order
+    connect(m_order->model(), &QAbstractItemModel::rowsInserted, this, &SongEditorDialog::updateTranslations);
+    connect(m_order->model(), &QAbstractItemModel::rowsRemoved, this, &SongEditorDialog::updateTranslations);
     connect(buttons, &QDialogButtonBox::accepted, this, [this] { storePart(); accept(); });
     connect(buttons, &QDialogButtonBox::rejected, this, &QDialog::reject);
     m_okBtn = buttons->button(QDialogButtonBox::Ok);
@@ -223,6 +356,105 @@ SongEditorDialog::SongEditorDialog(const Song &song, const QStringList &order, M
     m_parts->setCurrentRow(m_parts->count() > 0 ? 0 : -1);
     loadPart(m_parts->currentRow());
     updateButtons();
+    updateTranslations();
+}
+
+// ---------------------------------------------------------------------------
+// Translations
+// ---------------------------------------------------------------------------
+
+void SongEditorDialog::linkSong()
+{
+    QList<Song> candidates;
+    for (const Song &s : m_store->songs()) {
+        if (s.id != m_song.id && !m_linked.contains(s.id)) {
+            candidates << s;
+        }
+    }
+    const QString id = pickSong(this, candidates);
+    if (id.isEmpty()) {
+        return;
+    }
+    // The chosen song brings its own translations along
+    m_linked << id;
+    for (const Song &s : m_store->translations(id)) {
+        if (s.id != m_song.id && !m_linked.contains(s.id)) {
+            m_linked << s.id;
+        }
+    }
+    updateTranslations();
+}
+
+void SongEditorDialog::updateTranslations()
+{
+    if (!m_okBtn || m_updatingLinks) {
+        return;   // still building the dialog, or removing chips below
+    }
+    // Parts of songs that are no longer linked leave the order
+    m_updatingLinks = true;
+    for (int i = m_order->count() - 1; i >= 0; --i) {
+        if (resolvePart(m_order->item(i)->data(kIdRole).toString()).id.isEmpty()) {
+            delete m_order->takeItem(i);
+        }
+    }
+    m_updatingLinks = false;
+
+    QStringList names;
+    QStringList missing;
+    QList<Song> linked;
+    const QStringList currentOrder = order();
+    for (const QString &id : std::as_const(m_linked)) {
+        const Song s = m_store ? m_store->song(id) : Song();
+        if (!s.isValid()) {
+            continue;
+        }
+        linked << s;
+        names << songCaption(s);
+        QStringList labels;
+        for (const SongPart &part : m_song.missingIn(s, currentOrder)) {
+            labels << part.label();
+        }
+        if (!labels.isEmpty()) {
+            missing << tr("Missing in \"%1\": %2").arg(s.title, labels.join(QLatin1String(", ")));
+        }
+    }
+    m_foreignBtn->setVisible(!linked.isEmpty());
+
+    m_linkedLabel->setText(names.isEmpty() ? tr("none") : names.join(QLatin1String(", ")));
+    m_linkedLabel->setEnabled(!names.isEmpty());
+    m_unlinkBtn->setEnabled(!names.isEmpty());
+    m_missingLabel->setText(missing.join('\n'));
+    m_missingLabel->setVisible(!missing.isEmpty());
+
+    if (m_translationRow) {
+        const QString keep = m_translation->currentData().toString();
+        m_translation->clear();
+        for (const Song &s : std::as_const(linked)) {
+            m_translation->addItem(songCaption(s), s.id);
+        }
+        m_translation->setCurrentIndex(qMax(0, m_translation->findData(keep)));
+        m_translationRow->setVisible(!linked.isEmpty());
+    }
+}
+
+void SongEditorDialog::setTranslationId(const QString &id)
+{
+    if (!m_translationRow) {
+        return;
+    }
+    const int i = m_translation->findData(id);
+    m_showTranslation->setChecked(!id.isEmpty() && i >= 0);
+    if (i >= 0) {
+        m_translation->setCurrentIndex(i);
+    }
+}
+
+QString SongEditorDialog::translationId() const
+{
+    if (!m_translationRow || m_translationRow->isHidden() || !m_showTranslation->isChecked()) {
+        return {};
+    }
+    return m_translation->currentData().toString();
 }
 
 // ---------------------------------------------------------------------------
@@ -310,24 +542,47 @@ void SongEditorDialog::removePart()
 // Order
 // ---------------------------------------------------------------------------
 
+SongPart SongEditorDialog::resolvePart(const QString &orderId, Song *source) const
+{
+    QString songId;
+    const QString partId = Song::splitPartId(orderId, &songId);
+    const Song song = songId.isEmpty() ? m_song
+                                       : (m_store && m_linked.contains(songId) ? m_store->song(songId) : Song());
+    if (source) {
+        *source = song;
+    }
+    const int i = song.partIndex(partId);
+    return i >= 0 ? song.parts.at(i) : SongPart();
+}
+
 void SongEditorDialog::updateOrderItem(QListWidgetItem *item) const
 {
-    const int i = m_song.partIndex(item->data(kIdRole).toString());
-    const SongPart part = m_song.parts.value(i);
-    item->setText(part.id);
+    const QString id = item->data(kIdRole).toString();
+    Song source;
+    const SongPart part = resolvePart(id, &source);
     item->setData(kKindRole, int(part.kind));
-    item->setToolTip(part.label());
+    if (id.contains(QLatin1Char('@'))) {
+        // Part in another language: "V3 EN"
+        item->setText(QStringLiteral("%1 %2").arg(part.id, source.language.toUpper()));
+        item->setToolTip(QStringLiteral("%1 (%2) \u2013 %3")
+                             .arg(part.label(), Song::languageName(source.language), source.title));
+    } else {
+        item->setText(part.id);
+        item->setToolTip(part.label());
+    }
 }
 
 void SongEditorDialog::appendToOrder(const QString &partId)
 {
-    if (m_song.partIndex(partId) < 0) {
+    if (resolvePart(partId).id.isEmpty()) {
         return;
     }
-    auto *item = new QListWidgetItem(m_order);
+    // Complete before it is inserted: inserting updates the translations, which checks the ids
+    auto *item = new QListWidgetItem;
     item->setData(kIdRole, partId);
     item->setFlags(Qt::ItemIsEnabled | Qt::ItemIsSelectable | Qt::ItemIsDragEnabled);
     updateOrderItem(item);
+    m_order->addItem(item);
     m_order->scrollToItem(item);
 }
 
@@ -372,6 +627,7 @@ Song SongEditorDialog::song() const
         s.copyright = s.copyright.mid(1).trimmed();   // the (C) sign is added on the slides
     }
     s.ccliNumber = m_ccli->text().trimmed();
+    s.language = m_language->currentData().toString();
     s.order = order();
     return s;
 }

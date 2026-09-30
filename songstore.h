@@ -44,6 +44,11 @@ public:
     bool    update(const Song &song);
     bool    remove(const QString &id);
 
+    // Translations: songs linked with each other (same group), sorted by language name
+    QList<Song> translations(const QString &id) const;
+    // Links the song with exactly these songs (empty: removes the song from its links)
+    bool        setTranslations(const QString &id, const QStringList &linkedIds);
+
     // SongSelect lyrics file. A song with the same CCLI number is replaced (its own
     // order is kept if the parts still exist), otherwise the song is added.
     // 'licence' receives the church licence number from the file footer.

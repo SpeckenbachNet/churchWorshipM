@@ -1011,22 +1011,22 @@ Please make sure your church may use this translation (e.g. for projection in se
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../mainwin.cpp" line="832"/>
+        <location filename="../mainwin.cpp" line="912"/>
         <source>CCLI Song # %1</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../mainwin.cpp" line="834"/>
+        <location filename="../mainwin.cpp" line="930"/>
         <source>CCLI License # %1</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../mainwin.cpp" line="975"/>
+        <location filename="../mainwin.cpp" line="1068"/>
         <source>Create a new event or open one under &quot;Events&quot;.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../mainwin.cpp" line="976"/>
+        <location filename="../mainwin.cpp" line="1069"/>
         <source>Add files or text slides to the playlist.</source>
         <translation type="unfinished"></translation>
     </message>
@@ -1045,7 +1045,7 @@ Please make sure your church may use this translation (e.g. for projection in se
     </message>
     <message>
         <location filename="../mainwin.cpp" line="422"/>
-        <location filename="../mainwin.cpp" line="991"/>
+        <location filename="../mainwin.cpp" line="1084"/>
         <source>This is not a valid YouTube link.</source>
         <translation type="unfinished"></translation>
     </message>
@@ -1060,17 +1060,17 @@ Please make sure your church may use this translation (e.g. for projection in se
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../mainwin.cpp" line="984"/>
+        <location filename="../mainwin.cpp" line="1077"/>
         <source>Blank – the projector shows nothing</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../mainwin.cpp" line="997"/>
+        <location filename="../mainwin.cpp" line="1090"/>
         <source>YouTube video – plays on the projector</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../mainwin.cpp" line="1008"/>
+        <location filename="../mainwin.cpp" line="1101"/>
         <source>Converting presentation...</source>
         <translation type="unfinished"></translation>
     </message>
@@ -1321,131 +1321,279 @@ Please install PowerPoint, OnlyOffice or LibreOffice, or export the presentation
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../slidedeck.cpp" line="332"/>
+        <location filename="../slidedeck.cpp" line="359"/>
         <source>The image could not be loaded.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../slidedeck.cpp" line="345"/>
+        <location filename="../slidedeck.cpp" line="372"/>
         <source>The presentation has not been converted yet.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../slidedeck.cpp" line="357"/>
+        <location filename="../slidedeck.cpp" line="384"/>
         <source>Unsupported file type.</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>Song</name>
+    <message>
+        <location filename="../song.cpp" line="327"/>
+        <source>German</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../song.cpp" line="327"/>
+        <source>English</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../song.cpp" line="328"/>
+        <source>French</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../song.cpp" line="328"/>
+        <source>Spanish</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../song.cpp" line="329"/>
+        <source>Italian</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../song.cpp" line="329"/>
+        <source>Dutch</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../song.cpp" line="330"/>
+        <source>Portuguese</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../song.cpp" line="330"/>
+        <source>Polish</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../song.cpp" line="331"/>
+        <source>Russian</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../song.cpp" line="331"/>
+        <source>Ukrainian</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../song.cpp" line="332"/>
+        <source>Romanian</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../song.cpp" line="332"/>
+        <source>Turkish</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../song.cpp" line="333"/>
+        <source>Arabic</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../song.cpp" line="333"/>
+        <source>Persian</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../song.cpp" line="334"/>
+        <source>Chinese</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../song.cpp" line="334"/>
+        <source>Korean</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
     <name>SongEditorDialog</name>
     <message>
-        <location filename="../songeditor.cpp" line="82"/>
-        <source>New song</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../songeditor.cpp" line="82"/>
-        <source>Edit song</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
         <location filename="../songeditor.cpp" line="89"/>
-        <source>e.g. 2011 Thankyou Music</source>
+        <source>Link translation</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../songeditor.cpp" line="91"/>
+        <source>Search title...</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../songeditor.cpp" line="134"/>
+        <source>New song</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../songeditor.cpp" line="134"/>
+        <source>Edit song</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../songeditor.cpp" line="141"/>
+        <source>e.g. 2011 Thankyou Music</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../songeditor.cpp" line="143"/>
         <source>empty for own songs</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../songeditor.cpp" line="96"/>
-        <source>Title:</source>
+        <location filename="../songeditor.cpp" line="162"/>
+        <source>Link...</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../songeditor.cpp" line="97"/>
-        <source>Authors:</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../songeditor.cpp" line="100"/>
-        <source>CCLI no.:</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../songeditor.cpp" line="102"/>
-        <source>Copyright:</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../songeditor.cpp" line="107"/>
-        <source>Add</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../songeditor.cpp" line="116"/>
-        <source>Remove</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../songeditor.cpp" line="117"/>
-        <source>Add to order</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../songeditor.cpp" line="118"/>
-        <source>Appends the part to the order (also: double click)</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../songeditor.cpp" line="127"/>
-        <source>Parts</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../songeditor.cpp" line="133"/>
-        <source>A line with --- starts a new slide within the part.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../songeditor.cpp" line="138"/>
-        <source>Lyrics of the part</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../songeditor.cpp" line="160"/>
-        <source>Remove from order</source>
+        <location filename="../songeditor.cpp" line="163"/>
+        <source>Links this song with the same song in another language</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../songeditor.cpp" line="165"/>
-        <source>Every part once</source>
+        <source>Unlink</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../songeditor.cpp" line="166"/>
-        <source>Resets the order: every part once in the listed sequence</source>
+        <source>Removes this song from the linked translations</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../songeditor.cpp" line="168"/>
-        <source>Order (drag to rearrange, Del removes)</source>
+        <location filename="../songeditor.cpp" line="176"/>
+        <source>Language:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../songeditor.cpp" line="183"/>
-        <source>Use this order as default for the song</source>
+        <location filename="../songeditor.cpp" line="178"/>
+        <source>Title:</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../songeditor.cpp" line="179"/>
+        <source>Authors:</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../songeditor.cpp" line="182"/>
+        <source>CCLI no.:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../songeditor.cpp" line="184"/>
+        <source>Copyright:</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../songeditor.cpp" line="193"/>
+        <source>Translations:</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../songeditor.cpp" line="198"/>
+        <source>Add</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../songeditor.cpp" line="207"/>
+        <source>Remove</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../songeditor.cpp" line="208"/>
+        <source>Add to order</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../songeditor.cpp" line="209"/>
+        <source>Appends the part to the order (also: double click)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../songeditor.cpp" line="218"/>
+        <source>Parts</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../songeditor.cpp" line="224"/>
+        <source>A line with --- starts a new slide within the part.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../songeditor.cpp" line="229"/>
+        <source>Lyrics of the part</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../songeditor.cpp" line="251"/>
+        <source>Remove from order</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../songeditor.cpp" line="256"/>
+        <source>Every part once</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../songeditor.cpp" line="257"/>
+        <source>Resets the order: every part once in the listed sequence</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../songeditor.cpp" line="259"/>
+        <source>Part in other language</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../songeditor.cpp" line="260"/>
+        <source>Appends a part of a linked translation to the order</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../songeditor.cpp" line="263"/>
+        <source>Order (drag to rearrange, Del removes)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../songeditor.cpp" line="281"/>
+        <source>Show translation below:</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../songeditor.cpp" line="292"/>
+        <source>Use this order as default for the song</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../songeditor.cpp" line="293"/>
         <source>Otherwise the order only applies to this event.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../songeditor.cpp" line="185"/>
+        <location filename="../songeditor.cpp" line="294"/>
         <source>Changes of the lyrics apply to every event.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../songeditor.cpp" line="402"/>
+        <source>Missing in &quot;%1&quot;: %2</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../songeditor.cpp" line="417"/>
+        <source>none</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -1500,12 +1648,12 @@ Please install PowerPoint, OnlyOffice or LibreOffice, or export the presentation
 <context>
     <name>SongStore</name>
     <message>
-        <location filename="../songstore.cpp" line="162"/>
+        <location filename="../songstore.cpp" line="235"/>
         <source>Cannot open %1.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../songstore.cpp" line="167"/>
+        <location filename="../songstore.cpp" line="240"/>
         <source>%1 is not a SongSelect lyrics file.</source>
         <translation type="unfinished"></translation>
     </message>
@@ -1543,12 +1691,22 @@ Please install PowerPoint, OnlyOffice or LibreOffice, or export the presentation
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../songspage.cpp" line="162"/>
+        <location filename="../songspage.cpp" line="52"/>
+        <source>Language</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../songspage.cpp" line="142"/>
+        <source>Translations: %1</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../songspage.cpp" line="181"/>
         <source>There are no songs yet. Import SongSelect lyrics files with &quot;Import&quot; or drop them here.</source>
         <translation type="unfinished"></translation>
     </message>
     <message numerus="yes">
-        <location filename="../songspage.cpp" line="163"/>
+        <location filename="../songspage.cpp" line="182"/>
         <source>%n songs</source>
         <translation>
             <numerusform>%n song</numerusform>
@@ -1556,7 +1714,7 @@ Please install PowerPoint, OnlyOffice or LibreOffice, or export the presentation
         </translation>
     </message>
     <message numerus="yes">
-        <location filename="../songspage.cpp" line="164"/>
+        <location filename="../songspage.cpp" line="183"/>
         <source>%1 of %n songs</source>
         <translation>
             <numerusform>%1 of %n song</numerusform>
@@ -1564,18 +1722,18 @@ Please install PowerPoint, OnlyOffice or LibreOffice, or export the presentation
         </translation>
     </message>
     <message>
-        <location filename="../songspage.cpp" line="194"/>
-        <location filename="../songspage.cpp" line="224"/>
+        <location filename="../songspage.cpp" line="213"/>
+        <location filename="../songspage.cpp" line="243"/>
         <source>Import songs</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../songspage.cpp" line="235"/>
+        <location filename="../songspage.cpp" line="254"/>
         <source>Delete the song &quot;%1&quot; from the song library?</source>
         <translation type="unfinished"></translation>
     </message>
     <message numerus="yes">
-        <location filename="../songspage.cpp" line="236"/>
+        <location filename="../songspage.cpp" line="255"/>
         <source>Delete %n songs from the song library?</source>
         <translation>
             <numerusform>Delete %n song from the song library?</numerusform>
@@ -1583,12 +1741,12 @@ Please install PowerPoint, OnlyOffice or LibreOffice, or export the presentation
         </translation>
     </message>
     <message>
-        <location filename="../songspage.cpp" line="237"/>
+        <location filename="../songspage.cpp" line="256"/>
         <source>Delete</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../songspage.cpp" line="238"/>
+        <location filename="../songspage.cpp" line="257"/>
         <source>Events keep their copy of the lyrics.</source>
         <translation type="unfinished"></translation>
     </message>

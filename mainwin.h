@@ -72,7 +72,9 @@ private:
     void applySongSelection();
     QString songCredits(const QListWidgetItem *item) const;   // copyright lines for the first slide
     bool refreshSongEntry(QListWidgetItem *item);   // lyrics from the library, true if changed
-    QList<SongPart> songSlideParts(const QListWidgetItem *item) const;   // empty if unknown
+    QList<SongSlide> songSlides(const QListWidgetItem *item) const;   // from the library, empty if unknown
+    QStringList songSlideLabels(const QListWidgetItem *item) const;   // "Vers 1", ... empty if unknown
+    QStringList songTranslationSlides(const QListWidgetItem *item) const;   // empty: no translation
     void editSongEntry(QListWidgetItem *item);
 
     // --- Media library page

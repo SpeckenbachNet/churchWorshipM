@@ -36,7 +36,7 @@ namespace {
 constexpr int kIdRole   = Qt::UserRole + 1;
 constexpr int kTextRole = Qt::UserRole + 2;   // lyrics for the full text search
 
-enum Column { ColTitle, ColAuthors, ColOrder, ColCcli };
+enum Column { ColTitle, ColLanguage, ColAuthors, ColOrder, ColCcli };
 
 const char *kLyricsFilter = QT_TRANSLATE_NOOP("SongsPage", "SongSelect lyrics (*.txt)");
 
@@ -49,7 +49,7 @@ SongsPage::SongsPage(QWidget *parent)
     m_search->setPlaceholderText(tr("Search title, author, CCLI number or lyrics..."));
 
     m_tree = new QTreeWidget(this);
-    m_tree->setHeaderLabels({tr("Title"), tr("Authors"), tr("Order"), tr("CCLI")});
+    m_tree->setHeaderLabels({tr("Title"), tr("Language"), tr("Authors"), tr("Order"), tr("CCLI")});
     m_tree->setRootIsDecorated(false);
     m_tree->setUniformRowHeights(true);
     m_tree->setAlternatingRowColors(true);
@@ -61,6 +61,7 @@ SongsPage::SongsPage(QWidget *parent)
     m_tree->header()->setStretchLastSection(true);
     m_tree->setSelectionMode(QAbstractItemView::ExtendedSelection);
     m_tree->setColumnWidth(ColTitle, 280);
+    m_tree->setColumnWidth(ColLanguage, 170);
     m_tree->setColumnWidth(ColAuthors, 300);
     m_tree->setColumnWidth(ColOrder, 220);
 
@@ -129,9 +130,27 @@ void SongsPage::refresh()
         item->setData(ColTitle, kIdRole, song.id);
         item->setData(ColTitle, kTextRole, song.allText());
         item->setText(ColTitle, song.title);
+        // Language, linked translations after it: "Englisch + Deutsch"
+        QStringList languages{Song::languageName(song.language)};
+        QStringList linked;
+        for (const Song &t : m_store->translations(song.id)) {
+            languages << Song::languageName(t.language);
+            linked << QStringLiteral("%1 (%2)").arg(t.title, Song::languageName(t.language));
+        }
+        item->setText(ColLanguage, languages.join(QLatin1String(" + ")));
+        if (!linked.isEmpty()) {
+            item->setToolTip(ColLanguage, tr("Translations: %1").arg(linked.join(QLatin1String(", "))));
+        }
         item->setText(ColAuthors, song.authors);
         item->setToolTip(ColAuthors, song.authors);
-        item->setText(ColOrder, song.order.join(QLatin1Char(' ')));
+        QStringList order;
+        for (const QString &id : song.order) {
+            QString songId;
+            const QString partId = Song::splitPartId(id, &songId);
+            order << (songId.isEmpty() ? partId
+                                       : QStringLiteral("%1-%2").arg(partId, m_store->song(songId).language.toUpper()));
+        }
+        item->setText(ColOrder, order.join(QLatin1Char(' ')));
         item->setText(ColCcli, song.ccliNumber);
         if (!song.copyright.isEmpty()) {
             item->setToolTip(ColTitle, QStringLiteral("© %1").arg(song.copyright));
@@ -246,11 +265,12 @@ void SongsPage::removeSelected()
 
 void SongsPage::newSong()
 {
-    SongEditorDialog dlg(Song(), {}, SongEditorDialog::Library, this);
+    SongEditorDialog dlg(Song(), {}, SongEditorDialog::Library, m_store, this);
     if (dlg.exec() != QDialog::Accepted) {
         return;
     }
     const QString id = m_store->add(dlg.song());
+    m_store->setTranslations(id, dlg.linkedIds());
     m_search->clear();
     m_tree->clearSelection();
     selectIds({id});
@@ -263,9 +283,10 @@ void SongsPage::editSelected()
     if (!song.isValid()) {
         return;
     }
-    SongEditorDialog dlg(song, {}, SongEditorDialog::Library, this);
+    SongEditorDialog dlg(song, {}, SongEditorDialog::Library, m_store, this);
     if (dlg.exec() == QDialog::Accepted) {
         m_store->update(dlg.song());
+        m_store->setTranslations(song.id, dlg.linkedIds());
     }
 }
 

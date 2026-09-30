@@ -723,34 +723,17 @@ void MainWin::applySongSelection() {
         }
         // The text is a copy: the event stays complete even if the song is changed or deleted.
         // The reference allows own orders per event later on.
-        QListWidgetItem *item = createEntry(song.title, MediaItem::Song, {}, song.slideText());
+        QListWidgetItem *item = createEntry(song.title, MediaItem::Song, {}, QString());
         // Credits are kept with the entry as well: needed on the slides even without the library
         item->setData(MediaItem::SongRole, QJsonObject{{"id", song.id}, {"authors", song.authors},
                                                        {"copyright", song.copyright},
                                                        {"ccli", song.ccliNumber}});
+        refreshSongEntry(item);   // lyrics, parts in other languages
         insertEntry(item);
     }
 }
 
-bool MainWin::refreshSongEntry(QListWidgetItem *item) {
-    const QJsonObject o = item->data(MediaItem::SongRole).toJsonObject();
-    const Song song = m_songs->song(o.value("id").toString());
-    if (!song.isValid()) {
-        return false;   // not (any more) in the library: the entry keeps its copy
-    }
-    QStringList order;
-    for (const QJsonValue &v : o.value("order").toArray()) {
-        order << v.toString();
-    }
-    const QString text = song.slideText(order);
-    if (item->data(MediaItem::TextRole).toString() == text) {
-        return false;
-    }
-    item->setData(MediaItem::TextRole, text);
-    return true;
-}
-
-QList<SongPart> MainWin::songSlideParts(const QListWidgetItem *item) const {
+QList<SongSlide> MainWin::songSlides(const QListWidgetItem *item) const {
     const QJsonObject o = item->data(MediaItem::SongRole).toJsonObject();
     const Song song = m_songs->song(o.value("id").toString());
     if (!song.isValid()) {
@@ -760,7 +743,84 @@ QList<SongPart> MainWin::songSlideParts(const QListWidgetItem *item) const {
     for (const QJsonValue &v : o.value("order").toArray()) {
         order << v.toString();
     }
-    return song.slideParts(order);
+    const QList<Song> linked = m_songs->translations(song.id);
+    Song translation;
+    const QString translationId = o.value("translation").toObject().value("id").toString();
+    for (const Song &s : linked) {
+        if (s.id == translationId) {
+            translation = s;
+        }
+    }
+    return song.slides(order, linked, translation.isValid() ? &translation : nullptr);
+}
+
+bool MainWin::refreshSongEntry(QListWidgetItem *item) {
+    QJsonObject o = item->data(MediaItem::SongRole).toJsonObject();
+    const Song song = m_songs->song(o.value("id").toString());
+    if (!song.isValid()) {
+        return false;   // not (any more) in the library: the entry keeps its copy
+    }
+    const QList<SongSlide> slides = songSlides(item);
+    bool changed = false;
+    const QString text = Song::slideText(slides);
+    if (item->data(MediaItem::TextRole).toString() != text) {
+        item->setData(MediaItem::TextRole, text);
+        changed = true;
+    }
+
+    const auto creditsOf = [](const Song &s) {
+        return QJsonObject{{"id", s.id}, {"title", s.title}, {"authors", s.authors},
+                           {"copyright", s.copyright}, {"ccli", s.ccliNumber}};
+    };
+    QJsonObject fresh = o;
+    // Translation shown below: a copy as well, one text per slide
+    const Song translation = m_songs->song(o.value("translation").toObject().value("id").toString());
+    if (translation.isValid()) {
+        QStringList below;
+        for (const SongSlide &slide : slides) {
+            below << slide.below;
+        }
+        QJsonObject t = creditsOf(translation);
+        t.insert("slides", QJsonArray::fromStringList(below));
+        fresh.insert("translation", t);
+    }
+    // Other songs with parts in the order (verse sung in another language): their credits
+    QJsonArray others;
+    QStringList seen{song.id, translation.id};
+    for (const SongSlide &slide : slides) {
+        if (!seen.contains(slide.songId)) {
+            seen << slide.songId;
+            others.append(creditsOf(m_songs->song(slide.songId)));
+        }
+    }
+    if (others.isEmpty()) {
+        fresh.remove("others");
+    } else {
+        fresh.insert("others", others);
+    }
+    if (fresh != o) {
+        item->setData(MediaItem::SongRole, fresh);
+        changed = true;
+    }
+    return changed;
+}
+
+QStringList MainWin::songTranslationSlides(const QListWidgetItem *item) const {
+    QStringList slides;
+    const QJsonObject t = item->data(MediaItem::SongRole).toJsonObject().value("translation").toObject();
+    for (const QJsonValue &v : t.value("slides").toArray()) {
+        slides << v.toString();
+    }
+    return slides;
+}
+
+QStringList MainWin::songSlideLabels(const QListWidgetItem *item) const {
+    QStringList labels;
+    for (const SongSlide &slide : songSlides(item)) {
+        labels << (slide.foreign ? QStringLiteral("%1 (%2)").arg(slide.part.label(), Song::languageName(slide.language))
+                                 : slide.part.label());
+    }
+    return labels;
 }
 
 void MainWin::editSongEntry(QListWidgetItem *item) {
@@ -771,7 +831,8 @@ void MainWin::editSongEntry(QListWidgetItem *item) {
         order << v.toString();
     }
 
-    SongEditorDialog dlg(old, order, SongEditorDialog::Event, this);
+    SongEditorDialog dlg(old, order, SongEditorDialog::Event, m_songs, this);
+    dlg.setTranslationId(o.value("translation").toObject().value("id").toString());
     if (dlg.exec() != QDialog::Accepted) {
         return;
     }
@@ -787,9 +848,11 @@ void MainWin::editSongEntry(QListWidgetItem *item) {
             }
             return ids;
         }();
-        // Parts removed in the dialog must not stay in the default order
+        // Parts removed in the dialog must not stay in the default order (parts of linked songs stay)
         edited.order.erase(std::remove_if(edited.order.begin(), edited.order.end(),
-                                          [&](const QString &id) { return !partIds.contains(id); }),
+                                          [&](const QString &id) {
+                                              return !id.contains(QLatin1Char('@')) && !partIds.contains(id);
+                                          }),
                            edited.order.end());
     }
     // The entry follows the default as long as it has no own order
@@ -801,11 +864,19 @@ void MainWin::editSongEntry(QListWidgetItem *item) {
     o.insert("authors", edited.authors);
     o.insert("copyright", edited.copyright);
     o.insert("ccli", edited.ccliNumber);
+    // Translation: only for this event
+    const QString translationId = dlg.translationId();
+    if (translationId.isEmpty()) {
+        o.remove("translation");
+    } else if (o.value("translation").toObject().value("id").toString() != translationId) {
+        o.insert("translation", QJsonObject{{"id", translationId}});   // filled by refreshSongEntry()
+    }
     if (item->text() == old.title) {
         item->setText(edited.title);   // keep a title changed in the playlist
     }
     item->setData(MediaItem::SongRole, o);
     m_songs->update(edited);   // refreshes the lyrics of all entries of this song
+    m_songs->setTranslations(edited.id, dlg.linkedIds());
     refreshSongEntry(item);
     if (item == ui->playlistWidget->currentItem()) {
         showEntry(item);
@@ -823,23 +894,45 @@ QString MainWin::songCredits(const QListWidgetItem *item) const {
     const QString copyright = song.isValid() ? song.copyright : o.value("copyright").toString();
     const QString ccli      = song.isValid() ? song.ccliNumber : o.value("ccli").toString();
     const QString licence   = settings.value("ccli/licence").toString();
+    const QJsonObject translation = o.value("translation").toObject();
 
-    QStringList details;
-    if (!copyright.isEmpty()) {
-        details << QStringLiteral("\u00A9 %1").arg(copyright);
-    }
-    if (!ccli.isEmpty()) {
-        details << tr("CCLI Song # %1").arg(ccli);
-        if (!licence.isEmpty()) {
-            details << tr("CCLI License # %1").arg(licence);
-        }
-    }
+    // Per song: "Title – authors" and "© ... · CCLI Song # ...", the licence once at the end
+    bool anyCcli = false;
     QStringList lines;
-    if (!authors.isEmpty()) {
-        lines << item->text() + QStringLiteral(" \u2013 ") + authors;
+    const auto addSong = [&](const QString &title, const QString &songAuthors, const QString &songCopyright,
+                             const QString &songCcli) {
+        if (!songAuthors.isEmpty()) {
+            lines << title + QStringLiteral(" \u2013 ") + songAuthors;
+        }
+        QStringList details;
+        if (!songCopyright.isEmpty()) {
+            details << QStringLiteral("\u00A9 %1").arg(songCopyright);
+        }
+        if (!songCcli.isEmpty()) {
+            details << tr("CCLI Song # %1").arg(songCcli);
+            anyCcli = true;
+        }
+        if (!details.isEmpty()) {
+            lines << details.join(QStringLiteral("  \u00B7  "));
+        }
+    };
+    addSong(item->text(), authors, copyright, ccli);
+    if (!translation.value("slides").toArray().isEmpty()) {
+        addSong(translation.value("title").toString(), translation.value("authors").toString(),
+                translation.value("copyright").toString(), translation.value("ccli").toString());
     }
-    if (!details.isEmpty()) {
-        lines << details.join(QStringLiteral("  \u00B7  "));
+    for (const QJsonValue &v : o.value("others").toArray()) {
+        const QJsonObject other = v.toObject();
+        addSong(other.value("title").toString(), other.value("authors").toString(),
+                other.value("copyright").toString(), other.value("ccli").toString());
+    }
+    if (anyCcli && !licence.isEmpty()) {
+        const QString licenceText = tr("CCLI License # %1").arg(licence);
+        if (lines.isEmpty()) {
+            lines << licenceText;
+        } else {
+            lines.last() += QStringLiteral("  \u00B7  ") + licenceText;
+        }
     }
     return lines.join('\n');
 }
@@ -1017,7 +1110,7 @@ void MainWin::showEntry(QListWidgetItem *item) {
                                item->data(MediaItem::SourceRole).toString(),
                                item->data(MediaItem::TextRole).toString(),
                                item->data(MediaItem::BibleRole).toJsonObject(), &error,
-                               songCredits(item));
+                               songCredits(item), songTranslationSlides(item));
     if (!m_deck) {
         ui->previewLabel->setText(error);
         updateBeamer();
@@ -1027,16 +1120,16 @@ void MainWin::showEntry(QListWidgetItem *item) {
     // Thumbnails
     const qreal dpr = devicePixelRatioF();
     // Songs: the part of every slide as label ("Vers 1", "Chorus", ...)
-    QList<SongPart> parts = songSlideParts(item);
-    if (parts.size() != m_deck->count()) {
-        parts.clear();   // lyrics of the entry differ from the library (copy only)
+    QStringList labels = songSlideLabels(item);
+    if (labels.size() != m_deck->count()) {
+        labels.clear();   // lyrics of the entry differ from the library (copy only)
     }
     for (int i = 0; i < m_deck->count(); ++i) {
         QImage thumb = m_deck->render(i, kThumbSize * dpr);
         thumb.setDevicePixelRatio(dpr);
         QString label = QString::number(i + 1);
-        if (!parts.isEmpty()) {
-            label = parts.at(i).label();
+        if (!labels.isEmpty()) {
+            label = labels.at(i);
         }
         auto *slide = new QListWidgetItem(QIcon(QPixmap::fromImage(thumb)), label);
         slide->setToolTip(QString::number(i + 1));

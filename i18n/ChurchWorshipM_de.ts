@@ -1015,22 +1015,22 @@ Bitte stelle sicher, dass eure Gemeinde diese Übersetzung nutzen darf (z. B. f�
         <translation>Die Änderungen der Veranstaltung konnten nicht gespeichert werden.</translation>
     </message>
     <message>
-        <location filename="../mainwin.cpp" line="832"/>
+        <location filename="../mainwin.cpp" line="912"/>
         <source>CCLI Song # %1</source>
         <translation>CCLI-Liednummer %1</translation>
     </message>
     <message>
-        <location filename="../mainwin.cpp" line="834"/>
+        <location filename="../mainwin.cpp" line="930"/>
         <source>CCLI License # %1</source>
         <translation>CCLI-Lizenznummer %1</translation>
     </message>
     <message>
-        <location filename="../mainwin.cpp" line="975"/>
+        <location filename="../mainwin.cpp" line="1068"/>
         <source>Create a new event or open one under &quot;Events&quot;.</source>
         <translation>Lege eine neue Veranstaltung an oder öffne eine unter „Veranstaltungen“.</translation>
     </message>
     <message>
-        <location filename="../mainwin.cpp" line="976"/>
+        <location filename="../mainwin.cpp" line="1069"/>
         <source>Add files or text slides to the playlist.</source>
         <translation>Füge Dateien oder Textfolien zur Playlist hinzu.</translation>
     </message>
@@ -1049,7 +1049,7 @@ Bitte stelle sicher, dass eure Gemeinde diese Übersetzung nutzen darf (z. B. f�
     </message>
     <message>
         <location filename="../mainwin.cpp" line="422"/>
-        <location filename="../mainwin.cpp" line="991"/>
+        <location filename="../mainwin.cpp" line="1084"/>
         <source>This is not a valid YouTube link.</source>
         <translation>Das ist kein gültiger YouTube-Link.</translation>
     </message>
@@ -1064,17 +1064,17 @@ Bitte stelle sicher, dass eure Gemeinde diese Übersetzung nutzen darf (z. B. f�
         <translation>Veranstaltung speichern</translation>
     </message>
     <message>
-        <location filename="../mainwin.cpp" line="984"/>
+        <location filename="../mainwin.cpp" line="1077"/>
         <source>Blank – the projector shows nothing</source>
         <translation>Leer – der Beamer zeigt nichts</translation>
     </message>
     <message>
-        <location filename="../mainwin.cpp" line="997"/>
+        <location filename="../mainwin.cpp" line="1090"/>
         <source>YouTube video – plays on the projector</source>
         <translation>YouTube-Video – läuft auf dem Beamer</translation>
     </message>
     <message>
-        <location filename="../mainwin.cpp" line="1008"/>
+        <location filename="../mainwin.cpp" line="1101"/>
         <source>Converting presentation...</source>
         <translation>Präsentation wird umgewandelt …</translation>
     </message>
@@ -1326,132 +1326,280 @@ Bitte PowerPoint, OnlyOffice oder LibreOffice installieren oder die Präsentatio
         <translation>Die PDF-Datei konnte nicht geöffnet werden.</translation>
     </message>
     <message>
-        <location filename="../slidedeck.cpp" line="332"/>
+        <location filename="../slidedeck.cpp" line="359"/>
         <source>The image could not be loaded.</source>
         <translation>Das Bild konnte nicht geladen werden.</translation>
     </message>
     <message>
-        <location filename="../slidedeck.cpp" line="345"/>
+        <location filename="../slidedeck.cpp" line="372"/>
         <source>The presentation has not been converted yet.</source>
         <translation>Die Präsentation wurde noch nicht umgewandelt.</translation>
     </message>
     <message>
-        <location filename="../slidedeck.cpp" line="357"/>
+        <location filename="../slidedeck.cpp" line="384"/>
         <source>Unsupported file type.</source>
         <translation>Nicht unterstützter Dateityp.</translation>
     </message>
 </context>
 <context>
+    <name>Song</name>
+    <message>
+        <location filename="../song.cpp" line="327"/>
+        <source>German</source>
+        <translation>Deutsch</translation>
+    </message>
+    <message>
+        <location filename="../song.cpp" line="327"/>
+        <source>English</source>
+        <translation>Englisch</translation>
+    </message>
+    <message>
+        <location filename="../song.cpp" line="328"/>
+        <source>French</source>
+        <translation>Französisch</translation>
+    </message>
+    <message>
+        <location filename="../song.cpp" line="328"/>
+        <source>Spanish</source>
+        <translation>Spanisch</translation>
+    </message>
+    <message>
+        <location filename="../song.cpp" line="329"/>
+        <source>Italian</source>
+        <translation>Italienisch</translation>
+    </message>
+    <message>
+        <location filename="../song.cpp" line="329"/>
+        <source>Dutch</source>
+        <translation>Niederländisch</translation>
+    </message>
+    <message>
+        <location filename="../song.cpp" line="330"/>
+        <source>Portuguese</source>
+        <translation>Portugiesisch</translation>
+    </message>
+    <message>
+        <location filename="../song.cpp" line="330"/>
+        <source>Polish</source>
+        <translation>Polnisch</translation>
+    </message>
+    <message>
+        <location filename="../song.cpp" line="331"/>
+        <source>Russian</source>
+        <translation>Russisch</translation>
+    </message>
+    <message>
+        <location filename="../song.cpp" line="331"/>
+        <source>Ukrainian</source>
+        <translation>Ukrainisch</translation>
+    </message>
+    <message>
+        <location filename="../song.cpp" line="332"/>
+        <source>Romanian</source>
+        <translation>Rumänisch</translation>
+    </message>
+    <message>
+        <location filename="../song.cpp" line="332"/>
+        <source>Turkish</source>
+        <translation>Türkisch</translation>
+    </message>
+    <message>
+        <location filename="../song.cpp" line="333"/>
+        <source>Arabic</source>
+        <translation>Arabisch</translation>
+    </message>
+    <message>
+        <location filename="../song.cpp" line="333"/>
+        <source>Persian</source>
+        <translation>Persisch</translation>
+    </message>
+    <message>
+        <location filename="../song.cpp" line="334"/>
+        <source>Chinese</source>
+        <translation>Chinesisch</translation>
+    </message>
+    <message>
+        <location filename="../song.cpp" line="334"/>
+        <source>Korean</source>
+        <translation>Koreanisch</translation>
+    </message>
+</context>
+<context>
     <name>SongEditorDialog</name>
     <message>
-        <location filename="../songeditor.cpp" line="82"/>
+        <location filename="../songeditor.cpp" line="89"/>
+        <source>Link translation</source>
+        <translation>Übersetzung verknüpfen</translation>
+    </message>
+    <message>
+        <location filename="../songeditor.cpp" line="91"/>
+        <source>Search title...</source>
+        <translation>Titel suchen...</translation>
+    </message>
+    <message>
+        <location filename="../songeditor.cpp" line="134"/>
         <source>New song</source>
         <translation>Neues Lied</translation>
     </message>
     <message>
-        <location filename="../songeditor.cpp" line="82"/>
+        <location filename="../songeditor.cpp" line="134"/>
         <source>Edit song</source>
         <translation>Lied bearbeiten</translation>
     </message>
     <message>
-        <location filename="../songeditor.cpp" line="89"/>
+        <location filename="../songeditor.cpp" line="141"/>
         <source>e.g. 2011 Thankyou Music</source>
         <translation>z. B. 2011 Thankyou Music</translation>
     </message>
     <message>
-        <location filename="../songeditor.cpp" line="91"/>
+        <location filename="../songeditor.cpp" line="143"/>
         <source>empty for own songs</source>
         <translation>leer bei eigenen Liedern</translation>
     </message>
     <message>
-        <location filename="../songeditor.cpp" line="96"/>
+        <location filename="../songeditor.cpp" line="162"/>
+        <source>Link...</source>
+        <translation>Verknüpfen...</translation>
+    </message>
+    <message>
+        <location filename="../songeditor.cpp" line="163"/>
+        <source>Links this song with the same song in another language</source>
+        <translation>Verknüpft dieses Lied mit demselben Lied in einer anderen Sprache</translation>
+    </message>
+    <message>
+        <location filename="../songeditor.cpp" line="165"/>
+        <source>Unlink</source>
+        <translation>Lösen</translation>
+    </message>
+    <message>
+        <location filename="../songeditor.cpp" line="166"/>
+        <source>Removes this song from the linked translations</source>
+        <translation>Löst dieses Lied aus den verknüpften Übersetzungen</translation>
+    </message>
+    <message>
+        <location filename="../songeditor.cpp" line="176"/>
+        <source>Language:</source>
+        <translation>Sprache:</translation>
+    </message>
+    <message>
+        <location filename="../songeditor.cpp" line="178"/>
         <source>Title:</source>
         <translation>Titel:</translation>
     </message>
     <message>
-        <location filename="../songeditor.cpp" line="97"/>
+        <location filename="../songeditor.cpp" line="179"/>
         <source>Authors:</source>
         <translation>Autoren:</translation>
     </message>
     <message>
-        <location filename="../songeditor.cpp" line="100"/>
+        <location filename="../songeditor.cpp" line="182"/>
         <source>CCLI no.:</source>
         <translation>CCLI-Nr.:</translation>
     </message>
     <message>
-        <location filename="../songeditor.cpp" line="102"/>
+        <location filename="../songeditor.cpp" line="184"/>
         <source>Copyright:</source>
         <translation>Copyright:</translation>
     </message>
     <message>
-        <location filename="../songeditor.cpp" line="107"/>
+        <location filename="../songeditor.cpp" line="193"/>
+        <source>Translations:</source>
+        <translation>Übersetzungen:</translation>
+    </message>
+    <message>
+        <location filename="../songeditor.cpp" line="198"/>
         <source>Add</source>
         <translation>Hinzufügen</translation>
     </message>
     <message>
-        <location filename="../songeditor.cpp" line="116"/>
+        <location filename="../songeditor.cpp" line="207"/>
         <source>Remove</source>
         <translation>Entfernen</translation>
     </message>
     <message>
-        <location filename="../songeditor.cpp" line="117"/>
+        <location filename="../songeditor.cpp" line="208"/>
         <source>Add to order</source>
         <translation>In die Reihenfolge</translation>
     </message>
     <message>
-        <location filename="../songeditor.cpp" line="118"/>
+        <location filename="../songeditor.cpp" line="209"/>
         <source>Appends the part to the order (also: double click)</source>
         <translation>Hängt den Teil an die Reihenfolge an (auch per Doppelklick)</translation>
     </message>
     <message>
-        <location filename="../songeditor.cpp" line="127"/>
+        <location filename="../songeditor.cpp" line="218"/>
         <source>Parts</source>
         <translation>Teile</translation>
     </message>
     <message>
-        <location filename="../songeditor.cpp" line="133"/>
+        <location filename="../songeditor.cpp" line="224"/>
         <source>A line with --- starts a new slide within the part.</source>
         <translation>Eine Zeile mit --- beginnt innerhalb des Teils eine neue Folie.</translation>
     </message>
     <message>
-        <location filename="../songeditor.cpp" line="138"/>
+        <location filename="../songeditor.cpp" line="229"/>
         <source>Lyrics of the part</source>
         <translation>Text des Teils</translation>
     </message>
     <message>
-        <location filename="../songeditor.cpp" line="160"/>
+        <location filename="../songeditor.cpp" line="251"/>
         <source>Remove from order</source>
         <translation>Aus der Reihenfolge entfernen</translation>
     </message>
     <message>
-        <location filename="../songeditor.cpp" line="165"/>
+        <location filename="../songeditor.cpp" line="256"/>
         <source>Every part once</source>
         <translation>Jeder Teil einmal</translation>
     </message>
     <message>
-        <location filename="../songeditor.cpp" line="166"/>
+        <location filename="../songeditor.cpp" line="257"/>
         <source>Resets the order: every part once in the listed sequence</source>
         <translation>Setzt die Reihenfolge zurück: jeder Teil einmal in der aufgelisteten Folge</translation>
     </message>
     <message>
-        <location filename="../songeditor.cpp" line="168"/>
+        <location filename="../songeditor.cpp" line="259"/>
+        <source>Part in other language</source>
+        <translation>Teil in anderer Sprache</translation>
+    </message>
+    <message>
+        <location filename="../songeditor.cpp" line="260"/>
+        <source>Appends a part of a linked translation to the order</source>
+        <translation>Hängt einen Teil einer verknüpften Übersetzung an die Reihenfolge an</translation>
+    </message>
+    <message>
+        <location filename="../songeditor.cpp" line="263"/>
         <source>Order (drag to rearrange, Del removes)</source>
         <translation>Reihenfolge (ziehen zum Umsortieren, Entf entfernt)</translation>
     </message>
     <message>
-        <location filename="../songeditor.cpp" line="183"/>
+        <location filename="../songeditor.cpp" line="281"/>
+        <source>Show translation below:</source>
+        <translation>Übersetzung darunter anzeigen:</translation>
+    </message>
+    <message>
+        <location filename="../songeditor.cpp" line="292"/>
         <source>Use this order as default for the song</source>
         <translation>Diese Reihenfolge als Standard für das Lied übernehmen</translation>
     </message>
     <message>
-        <location filename="../songeditor.cpp" line="184"/>
+        <location filename="../songeditor.cpp" line="293"/>
         <source>Otherwise the order only applies to this event.</source>
         <translation>Sonst gilt die Reihenfolge nur für diese Veranstaltung.</translation>
     </message>
     <message>
-        <location filename="../songeditor.cpp" line="185"/>
+        <location filename="../songeditor.cpp" line="294"/>
         <source>Changes of the lyrics apply to every event.</source>
         <translation>Änderungen am Text gelten für alle Veranstaltungen.</translation>
+    </message>
+    <message>
+        <location filename="../songeditor.cpp" line="402"/>
+        <source>Missing in &quot;%1&quot;: %2</source>
+        <translation>Fehlt in „%1“: %2</translation>
+    </message>
+    <message>
+        <location filename="../songeditor.cpp" line="417"/>
+        <source>none</source>
+        <translation>keine</translation>
     </message>
 </context>
 <context>
@@ -1505,12 +1653,12 @@ Bitte PowerPoint, OnlyOffice oder LibreOffice installieren oder die Präsentatio
 <context>
     <name>SongStore</name>
     <message>
-        <location filename="../songstore.cpp" line="162"/>
+        <location filename="../songstore.cpp" line="235"/>
         <source>Cannot open %1.</source>
         <translation>%1 kann nicht geöffnet werden.</translation>
     </message>
     <message>
-        <location filename="../songstore.cpp" line="167"/>
+        <location filename="../songstore.cpp" line="240"/>
         <source>%1 is not a SongSelect lyrics file.</source>
         <translation>%1 ist keine SongSelect-Liedtextdatei.</translation>
     </message>
@@ -1548,12 +1696,22 @@ Bitte PowerPoint, OnlyOffice oder LibreOffice installieren oder die Präsentatio
         <translation>CCLI</translation>
     </message>
     <message>
-        <location filename="../songspage.cpp" line="162"/>
+        <location filename="../songspage.cpp" line="52"/>
+        <source>Language</source>
+        <translation>Sprache</translation>
+    </message>
+    <message>
+        <location filename="../songspage.cpp" line="142"/>
+        <source>Translations: %1</source>
+        <translation>Übersetzungen: %1</translation>
+    </message>
+    <message>
+        <location filename="../songspage.cpp" line="181"/>
         <source>There are no songs yet. Import SongSelect lyrics files with &quot;Import&quot; or drop them here.</source>
         <translation>Noch keine Lieder vorhanden. SongSelect-Liedtextdateien mit „Importieren“ einlesen oder hierher ziehen.</translation>
     </message>
     <message numerus="yes">
-        <location filename="../songspage.cpp" line="163"/>
+        <location filename="../songspage.cpp" line="182"/>
         <source>%n songs</source>
         <translation>
             <numerusform>%n Lied</numerusform>
@@ -1561,7 +1719,7 @@ Bitte PowerPoint, OnlyOffice oder LibreOffice installieren oder die Präsentatio
         </translation>
     </message>
     <message numerus="yes">
-        <location filename="../songspage.cpp" line="164"/>
+        <location filename="../songspage.cpp" line="183"/>
         <source>%1 of %n songs</source>
         <translation>
             <numerusform>%1 von %n Lied</numerusform>
@@ -1569,18 +1727,18 @@ Bitte PowerPoint, OnlyOffice oder LibreOffice installieren oder die Präsentatio
         </translation>
     </message>
     <message>
-        <location filename="../songspage.cpp" line="194"/>
-        <location filename="../songspage.cpp" line="224"/>
+        <location filename="../songspage.cpp" line="213"/>
+        <location filename="../songspage.cpp" line="243"/>
         <source>Import songs</source>
         <translation>Lieder importieren</translation>
     </message>
     <message>
-        <location filename="../songspage.cpp" line="235"/>
+        <location filename="../songspage.cpp" line="254"/>
         <source>Delete the song &quot;%1&quot; from the song library?</source>
         <translation>Das Lied „%1“ aus der Liedbibliothek löschen?</translation>
     </message>
     <message numerus="yes">
-        <location filename="../songspage.cpp" line="236"/>
+        <location filename="../songspage.cpp" line="255"/>
         <source>Delete %n songs from the song library?</source>
         <translation>
             <numerusform>%n Lied aus der Liedbibliothek löschen?</numerusform>
@@ -1588,12 +1746,12 @@ Bitte PowerPoint, OnlyOffice oder LibreOffice installieren oder die Präsentatio
         </translation>
     </message>
     <message>
-        <location filename="../songspage.cpp" line="237"/>
+        <location filename="../songspage.cpp" line="256"/>
         <source>Delete</source>
         <translation>Löschen</translation>
     </message>
     <message>
-        <location filename="../songspage.cpp" line="238"/>
+        <location filename="../songspage.cpp" line="257"/>
         <source>Events keep their copy of the lyrics.</source>
         <translation>Veranstaltungen behalten ihre Kopie des Liedtextes.</translation>
     </message>
