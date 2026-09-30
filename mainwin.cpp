@@ -402,8 +402,7 @@ void MainWin::addFiles() {
 }
 
 void MainWin::addTextEntry(MediaItem::Type type) {
-    TextSlideDialog dlg(this);
-    dlg.setType(type);
+    TextSlideDialog dlg(type, this);
     if (dlg.exec() != QDialog::Accepted) {
         return;
     }
@@ -495,15 +494,13 @@ void MainWin::editEntry(QListWidgetItem *item) {
         return;
     }
 
-    TextSlideDialog dlg(this);
-    dlg.setType(type);
+    TextSlideDialog dlg(type, this);
     dlg.setTitle(item->text());
     dlg.setText(item->data(MediaItem::TextRole).toString());
     if (dlg.exec() != QDialog::Accepted) {
         return;
     }
     item->setText(dlg.title());
-    item->setData(MediaItem::TypeRole, int(dlg.type()));
     item->setData(MediaItem::TextRole, dlg.text());
 
     if (item == ui->playlistWidget->currentItem()) {

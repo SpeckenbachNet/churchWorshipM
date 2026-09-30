@@ -1006,71 +1006,71 @@ Please make sure your church may use this translation (e.g. for projection in se
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../mainwin.cpp" line="603"/>
+        <location filename="../mainwin.cpp" line="600"/>
         <source>The changes of the event could not be saved.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../mainwin.cpp" line="822"/>
+        <location filename="../mainwin.cpp" line="832"/>
         <source>CCLI Song # %1</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../mainwin.cpp" line="824"/>
+        <location filename="../mainwin.cpp" line="834"/>
         <source>CCLI License # %1</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../mainwin.cpp" line="965"/>
+        <location filename="../mainwin.cpp" line="975"/>
         <source>Create a new event or open one under &quot;Events&quot;.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../mainwin.cpp" line="966"/>
+        <location filename="../mainwin.cpp" line="976"/>
         <source>Add files or text slides to the playlist.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../mainwin.cpp" line="416"/>
-        <location filename="../mainwin.cpp" line="423"/>
-        <location filename="../mainwin.cpp" line="426"/>
-        <location filename="../mainwin.cpp" line="459"/>
+        <location filename="../mainwin.cpp" line="415"/>
+        <location filename="../mainwin.cpp" line="422"/>
+        <location filename="../mainwin.cpp" line="425"/>
+        <location filename="../mainwin.cpp" line="458"/>
         <source>YouTube video</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../mainwin.cpp" line="417"/>
+        <location filename="../mainwin.cpp" line="416"/>
         <source>Link of the YouTube video:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../mainwin.cpp" line="423"/>
-        <location filename="../mainwin.cpp" line="981"/>
+        <location filename="../mainwin.cpp" line="422"/>
+        <location filename="../mainwin.cpp" line="991"/>
         <source>This is not a valid YouTube link.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../mainwin.cpp" line="440"/>
+        <location filename="../mainwin.cpp" line="439"/>
         <source>Blank</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../mainwin.cpp" line="603"/>
+        <location filename="../mainwin.cpp" line="600"/>
         <source>Save event</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../mainwin.cpp" line="974"/>
+        <location filename="../mainwin.cpp" line="984"/>
         <source>Blank – the projector shows nothing</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../mainwin.cpp" line="987"/>
+        <location filename="../mainwin.cpp" line="997"/>
         <source>YouTube video – plays on the projector</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../mainwin.cpp" line="998"/>
+        <location filename="../mainwin.cpp" line="1008"/>
         <source>Converting presentation...</source>
         <translation type="unfinished"></translation>
     </message>
@@ -1174,7 +1174,7 @@ Please make sure your church may use this translation (e.g. for projection in se
 <context>
     <name>PlaylistDelegate</name>
     <message>
-        <location filename="../playlistdelegate.cpp" line="92"/>
+        <location filename="../playlistdelegate.cpp" line="93"/>
         <source>File missing</source>
         <translation type="unfinished"></translation>
     </message>
@@ -1232,6 +1232,42 @@ Please install PowerPoint, OnlyOffice or LibreOffice, or export the presentation
     </message>
 </context>
 <context>
+    <name>RichTextEdit</name>
+    <message>
+        <location filename="../richtextedit.cpp" line="89"/>
+        <source>B</source>
+        <comment>button: bold</comment>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../richtextedit.cpp" line="89"/>
+        <source>Bold</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../richtextedit.cpp" line="91"/>
+        <source>I</source>
+        <comment>button: italic</comment>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../richtextedit.cpp" line="91"/>
+        <source>Italic</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../richtextedit.cpp" line="93"/>
+        <source>U</source>
+        <comment>button: underline</comment>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../richtextedit.cpp" line="93"/>
+        <source>Underline</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
     <name>SearchField</name>
     <message>
         <location filename="../searchfield.cpp" line="52"/>
@@ -1280,22 +1316,22 @@ Please install PowerPoint, OnlyOffice or LibreOffice, or export the presentation
 <context>
     <name>SlideDeck</name>
     <message>
-        <location filename="../slidedeck.cpp" line="56"/>
+        <location filename="../slidedeck.cpp" line="59"/>
         <source>The PDF file could not be opened.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../slidedeck.cpp" line="318"/>
+        <location filename="../slidedeck.cpp" line="332"/>
         <source>The image could not be loaded.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../slidedeck.cpp" line="331"/>
+        <location filename="../slidedeck.cpp" line="345"/>
         <source>The presentation has not been converted yet.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../slidedeck.cpp" line="343"/>
+        <location filename="../slidedeck.cpp" line="357"/>
         <source>Unsupported file type.</source>
         <translation type="unfinished"></translation>
     </message>
@@ -1303,112 +1339,112 @@ Please install PowerPoint, OnlyOffice or LibreOffice, or export the presentation
 <context>
     <name>SongEditorDialog</name>
     <message>
-        <location filename="../songeditor.cpp" line="98"/>
+        <location filename="../songeditor.cpp" line="82"/>
         <source>New song</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../songeditor.cpp" line="98"/>
+        <location filename="../songeditor.cpp" line="82"/>
         <source>Edit song</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../songeditor.cpp" line="105"/>
+        <location filename="../songeditor.cpp" line="89"/>
         <source>e.g. 2011 Thankyou Music</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../songeditor.cpp" line="107"/>
+        <location filename="../songeditor.cpp" line="91"/>
         <source>empty for own songs</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../songeditor.cpp" line="112"/>
+        <location filename="../songeditor.cpp" line="96"/>
         <source>Title:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../songeditor.cpp" line="113"/>
+        <location filename="../songeditor.cpp" line="97"/>
         <source>Authors:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../songeditor.cpp" line="116"/>
+        <location filename="../songeditor.cpp" line="100"/>
         <source>CCLI no.:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../songeditor.cpp" line="118"/>
+        <location filename="../songeditor.cpp" line="102"/>
         <source>Copyright:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../songeditor.cpp" line="123"/>
+        <location filename="../songeditor.cpp" line="107"/>
         <source>Add</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../songeditor.cpp" line="132"/>
+        <location filename="../songeditor.cpp" line="116"/>
         <source>Remove</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../songeditor.cpp" line="133"/>
+        <location filename="../songeditor.cpp" line="117"/>
         <source>Add to order</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../songeditor.cpp" line="134"/>
+        <location filename="../songeditor.cpp" line="118"/>
         <source>Appends the part to the order (also: double click)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../songeditor.cpp" line="143"/>
+        <location filename="../songeditor.cpp" line="127"/>
         <source>Parts</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../songeditor.cpp" line="150"/>
+        <location filename="../songeditor.cpp" line="133"/>
         <source>A line with --- starts a new slide within the part.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../songeditor.cpp" line="155"/>
+        <location filename="../songeditor.cpp" line="138"/>
         <source>Lyrics of the part</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../songeditor.cpp" line="177"/>
+        <location filename="../songeditor.cpp" line="160"/>
         <source>Remove from order</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../songeditor.cpp" line="182"/>
+        <location filename="../songeditor.cpp" line="165"/>
         <source>Every part once</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../songeditor.cpp" line="183"/>
+        <location filename="../songeditor.cpp" line="166"/>
         <source>Resets the order: every part once in the listed sequence</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../songeditor.cpp" line="185"/>
+        <location filename="../songeditor.cpp" line="168"/>
         <source>Order (drag to rearrange, Del removes)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../songeditor.cpp" line="200"/>
+        <location filename="../songeditor.cpp" line="183"/>
         <source>Use this order as default for the song</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../songeditor.cpp" line="201"/>
+        <location filename="../songeditor.cpp" line="184"/>
         <source>Otherwise the order only applies to this event.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../songeditor.cpp" line="202"/>
+        <location filename="../songeditor.cpp" line="185"/>
         <source>Changes of the lyrics apply to every event.</source>
         <translation type="unfinished"></translation>
     </message>
@@ -1416,47 +1452,47 @@ Please install PowerPoint, OnlyOffice or LibreOffice, or export the presentation
 <context>
     <name>SongPart</name>
     <message>
-        <location filename="../song.cpp" line="125"/>
+        <location filename="../song.cpp" line="126"/>
         <source>Verse</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../song.cpp" line="126"/>
+        <location filename="../song.cpp" line="127"/>
         <source>Pre-Chorus</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../song.cpp" line="127"/>
+        <location filename="../song.cpp" line="128"/>
         <source>Chorus</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../song.cpp" line="128"/>
+        <location filename="../song.cpp" line="129"/>
         <source>Bridge</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../song.cpp" line="129"/>
+        <location filename="../song.cpp" line="130"/>
         <source>Tag</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../song.cpp" line="130"/>
+        <location filename="../song.cpp" line="131"/>
         <source>Intro</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../song.cpp" line="131"/>
+        <location filename="../song.cpp" line="132"/>
         <source>Interlude</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../song.cpp" line="132"/>
+        <location filename="../song.cpp" line="133"/>
         <source>Ending</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../song.cpp" line="133"/>
+        <location filename="../song.cpp" line="134"/>
         <source>Part</source>
         <translation type="unfinished"></translation>
     </message>
@@ -1608,22 +1644,52 @@ Please install PowerPoint, OnlyOffice or LibreOffice, or export the presentation
 <context>
     <name>TextSlideDialog</name>
     <message>
-        <location filename="../textslidedialog.cpp" line="31"/>
-        <source>Text slides</source>
+        <location filename="../textslidedialog.cpp" line="41"/>
+        <source>Song text</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../textslidedialog.cpp" line="42"/>
+        <source>Bible text</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../textslidedialog.cpp" line="43"/>
+        <source>Own slide</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../textslidedialog.cpp" line="48"/>
+        <source>Optional, otherwise the first line</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../textslidedialog.cpp" line="51"/>
+        <source>Text of the slides.
+
+An empty line starts a new slide.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../textslidedialog.cpp" line="68"/>
         <source>An empty line starts a new slide.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../textslidedialog.cpp" line="57"/>
-        <source>Type:</source>
+        <location filename="../textslidedialog.cpp" line="153"/>
+        <source>No slides yet</source>
         <translation type="unfinished"></translation>
     </message>
+    <message numerus="yes">
+        <location filename="../textslidedialog.cpp" line="168"/>
+        <source>%n slide(s)</source>
+        <translation>
+            <numerusform>%n slide</numerusform>
+            <numerusform>%n slides</numerusform>
+        </translation>
+    </message>
     <message>
-        <location filename="../textslidedialog.cpp" line="58"/>
+        <location filename="../textslidedialog.cpp" line="73"/>
         <source>Title:</source>
         <translation type="unfinished"></translation>
     </message>

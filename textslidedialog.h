@@ -19,28 +19,39 @@
 #include "mediaitem.h"
 
 #include <QDialog>
+#include <QTimer>
 
-class QComboBox;
+class QLabel;
 class QLineEdit;
-class QPlainTextEdit;
+class QListWidget;
+class RichTextEdit;
+class QPushButton;
 
-// Create / edit a text based entry (song, bible text, own slide)
+// Creates / edits a text entry: own slides, and song or bible entries that are not
+// (any more) connected to the song library or an installed bible.
+// The type is fixed by the caller; the slides are previewed while typing.
 class TextSlideDialog : public QDialog {
     Q_OBJECT
 
 public:
-    explicit TextSlideDialog(QWidget *parent = nullptr);
+    explicit TextSlideDialog(MediaItem::Type type, QWidget *parent = nullptr);
 
-    void setType(MediaItem::Type type);
     void setTitle(const QString &title);
     void setText(const QString &text);
 
-    MediaItem::Type type() const;
-    QString title() const;
+    MediaItem::Type type() const { return m_type; }
+    QString title() const;   // first line of the text if no title was entered
     QString text() const;
 
 private:
-    QComboBox      *m_typeCombo = nullptr;
+    void updatePreview();
+    void updateOk();
+
+    MediaItem::Type m_type;
     QLineEdit      *m_titleEdit = nullptr;
-    QPlainTextEdit *m_textEdit  = nullptr;
+    RichTextEdit   *m_textEdit  = nullptr;
+    QListWidget    *m_preview   = nullptr;
+    QLabel         *m_count     = nullptr;
+    QPushButton    *m_okBtn     = nullptr;
+    QTimer          m_previewTimer;
 };

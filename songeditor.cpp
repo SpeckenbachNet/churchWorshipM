@@ -15,6 +15,7 @@
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
 #include "songeditor.h"
+#include "richtextedit.h"
 
 #include <QCheckBox>
 #include <QDialogButtonBox>
@@ -27,7 +28,6 @@
 #include <QMenu>
 #include <QPainter>
 #include <QPainterPath>
-#include <QPlainTextEdit>
 #include <QPushButton>
 #include <QShortcut>
 #include <QSplitter>
@@ -129,8 +129,7 @@ SongEditorDialog::SongEditorDialog(const Song &song, const QStringList &order, M
     partsLayout->addLayout(partButtons);
     partsLayout->addWidget(m_toOrderBtn);
 
-    m_text = new QPlainTextEdit(this);
-    m_text->document()->setDocumentMargin(8);
+    m_text = new RichTextEdit(this);
     auto *hint = new QLabel(tr("A line with --- starts a new slide within the part."), this);
     hint->setEnabled(false);   // muted
     auto *textBox = new QWidget(this);
@@ -252,14 +251,14 @@ void SongEditorDialog::loadPart(int row)
 {
     m_currentPart = row;
     const QSignalBlocker blocker(m_text);
-    m_text->setPlainText(row >= 0 && row < m_song.parts.size() ? m_song.parts.at(row).text : QString());
+    m_text->setMarkup(row >= 0 && row < m_song.parts.size() ? m_song.parts.at(row).text : QString());
     m_text->setEnabled(row >= 0);
 }
 
 void SongEditorDialog::storePart()
 {
     if (m_currentPart >= 0 && m_currentPart < m_song.parts.size()) {
-        m_song.parts[m_currentPart].text = m_text->toPlainText().trimmed();
+        m_song.parts[m_currentPart].text = m_text->markup().trimmed();
     }
 }
 

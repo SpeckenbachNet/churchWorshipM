@@ -30,7 +30,7 @@ struct SongPart {
     QString id;      // short key used in the order: "V1", "C", "C2", "P", "B", "T", "E", ...
     Kind    kind = Other;
     int     number = 0;   // 1 for "Verse 1", 0 if the part has no number
-    QString text;    // lines of the part; a line "---" forces a new slide
+    QString text;    // lines of the part (TextMarkup); a line "---" forces a new slide
 
     QString label() const;   // translated display name, e.g. "Vers 1"
     static QString idPrefix(Kind kind);   // "V", "C", "B", ...

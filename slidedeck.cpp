@@ -16,12 +16,15 @@
  */
 #include "slidedeck.h"
 #include "presentationconverter.h"
+#include "textmarkup.h"
 
 #include <QApplication>
 #include <QPainter>
 #include <QPdfDocument>
 #include <QRegularExpression>
+#include <QTextCharFormat>
 #include <QTextDocument>
+#include <QTextOption>
 
 namespace {
 
@@ -134,22 +137,33 @@ public:
             p.setPen(Qt::white);
             area.setBottom(qMin(area.bottom(), creditRect.top() - fm.lineSpacing()));
         }
-        const int flags = Qt::AlignCenter | Qt::TextWordWrap;
-        const QString &text = m_pages.at(index);
+        // Formatted text (bold / italic / underline), every line centered
+        QTextDocument doc;
+        doc.setDocumentMargin(0);
+        QTextOption option(Qt::AlignHCenter);
+        option.setWrapMode(QTextOption::WordWrap);
+        doc.setDefaultTextOption(option);
+        QTextCharFormat base;
+        base.setForeground(Qt::white);
+        TextMarkup::fillDocument(&doc, m_pages.at(index), base);
+        doc.setTextWidth(area.width());
 
+        // Largest font size where the whole text fits; a single word is never broken
         QFont font = QApplication::font();
         int pixelSize = size.height() / 9;
         for (; pixelSize > 6; pixelSize -= qMax(1, pixelSize / 20)) {
             font.setPixelSize(pixelSize);
-            const QRect needed = QFontMetrics(font).boundingRect(area, flags, text);
-            if (needed.width() <= area.width() && needed.height() <= area.height()) {
+            doc.setDefaultFont(font);
+            if (doc.size().height() <= area.height() && doc.idealWidth() <= area.width()) {
                 break;
             }
         }
         font.setPixelSize(pixelSize);
+        doc.setDefaultFont(font);
 
-        p.setFont(font);
-        p.drawText(area, flags, text);
+        const qreal top = area.top() + (area.height() - doc.size().height()) / 2.0;
+        p.translate(area.left(), qMax<qreal>(area.top(), top));
+        doc.drawContents(&p);
         return image;
     }
 

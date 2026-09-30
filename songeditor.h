@@ -24,7 +24,7 @@ class QCheckBox;
 class QLineEdit;
 class QListWidget;
 class QListWidgetItem;
-class QPlainTextEdit;
+class RichTextEdit;
 class QPushButton;
 
 // Edits a song: data, parts and the order in which the parts are sung.
@@ -68,7 +68,7 @@ private:
     QPushButton     *m_addPartBtn = nullptr;
     QPushButton     *m_removePartBtn = nullptr;
     QPushButton     *m_toOrderBtn = nullptr;
-    QPlainTextEdit  *m_text = nullptr;
+    RichTextEdit    *m_text = nullptr;
     QListWidget     *m_order = nullptr;
     QCheckBox       *m_asDefault = nullptr;
     QPushButton     *m_okBtn = nullptr;

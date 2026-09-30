@@ -15,6 +15,7 @@
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
 #include "playlistdelegate.h"
+#include "textmarkup.h"
 #include "mediaitem.h"
 
 #include <QApplication>
@@ -77,7 +78,7 @@ void PlaylistDelegate::paint(QPainter *painter, const QStyleOptionViewItem &opti
     if (!bible.isEmpty()) {
         detail = bible.value("abbreviation").toString();
     } else if (MediaItem::isTextType(type)) {
-        detail = index.data(MediaItem::TextRole).toString().section('\n', 0, 0).trimmed();
+        detail = TextMarkup::toPlain(index.data(MediaItem::TextRole).toString()).section('\n', 0, 0).trimmed();
     } else if (type == MediaItem::YouTube) {
         detail = index.data(MediaItem::SourceRole).toString();
     } else {

@@ -15,6 +15,7 @@
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
 #include "song.h"
+#include "textmarkup.h"
 
 #include <QCoreApplication>
 #include <QJsonArray>
@@ -246,7 +247,7 @@ QString Song::allText() const
 {
     QStringList texts;
     for (const SongPart &p : parts) {
-        texts << p.text;
+        texts << TextMarkup::toPlain(p.text);
     }
     return texts.join('\n');
 }

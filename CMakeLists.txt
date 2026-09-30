@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.16)
 
-set(PROJECT_VERSION "0.3.0")
+set(PROJECT_VERSION "0.4.0")
 set(ORGANIZATION_NAME "SpeckenbachNet")
 set(ORGANIZATION_DOMAIN "net.speckenbach")
 
@@ -96,6 +96,10 @@ if(${QT_VERSION_MAJOR} GREATER_EQUAL 6)
         songspage.cpp
         songeditor.h
         songeditor.cpp
+        textmarkup.h
+        textmarkup.cpp
+        richtextedit.h
+        richtextedit.cpp
         searchfield.h
         searchfield.cpp
         data.qrc
