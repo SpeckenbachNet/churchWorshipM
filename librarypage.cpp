@@ -132,7 +132,7 @@ LibraryPage::LibraryPage(QWidget *parent)
 
     m_typeFilter = new QComboBox(this);
     m_typeFilter->addItem(tr("All types"), int(MediaItem::Unknown));
-    for (MediaItem::Type t : {MediaItem::Image, MediaItem::Pdf, MediaItem::PowerPoint}) {
+    for (MediaItem::Type t : {MediaItem::Image, MediaItem::Video, MediaItem::Pdf, MediaItem::PowerPoint}) {
         m_typeFilter->addItem(MediaItem::typeIcon(t), MediaItem::typeName(t), int(t));
     }
 

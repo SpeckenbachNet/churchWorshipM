@@ -105,7 +105,7 @@
 <context>
     <name>BeamerWindow</name>
     <message>
-        <location filename="../beamerwindow.cpp" line="53"/>
+        <location filename="../beamerwindow.cpp" line="58"/>
         <source>Projector</source>
         <translation type="unfinished"></translation>
     </message>
@@ -454,6 +454,80 @@ Please make sure your church may use this translation (e.g. for projection in se
     <message>
         <location filename="../biblestore.cpp" line="330"/>
         <source>The bible could not be saved.</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>Countdown</name>
+    <message>
+        <location filename="../countdown.cpp" line="51"/>
+        <source>The service starts in</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../countdown.cpp" line="52"/>
+        <source>Here we go!</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message numerus="yes">
+        <location filename="../countdown.cpp" line="73"/>
+        <source>%n min</source>
+        <translation>
+            <numerusform>%n min</numerusform>
+            <numerusform>%n min</numerusform>
+        </translation>
+    </message>
+    <message>
+        <location filename="../countdown.cpp" line="74"/>
+        <source>small in the corner</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>CountdownDialog</name>
+    <message>
+        <location filename="../countdown.cpp" line="162"/>
+        <source>Countdown</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../countdown.cpp" line="167"/>
+        <source> min</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../countdown.cpp" line="171"/>
+        <source>Large in the middle</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../countdown.cpp" line="172"/>
+        <source>Small in the corner – e.g. above the running announcements</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../countdown.cpp" line="175"/>
+        <source>Starts as soon as the entry is chosen. At 0:00 the end text appears and fades out to black.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../countdown.cpp" line="183"/>
+        <source>Duration:</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../countdown.cpp" line="184"/>
+        <source>Heading:</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../countdown.cpp" line="185"/>
+        <source>At the end:</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../countdown.cpp" line="190"/>
+        <source>Display:</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -851,368 +925,470 @@ Please make sure your church may use this translation (e.g. for projection in se
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../mainwin.cpp" line="68"/>
-        <location filename="../mainwin.cpp" line="125"/>
-        <location filename="../mainwin.cpp" line="139"/>
+        <location filename="../mainwin.cpp" line="75"/>
+        <location filename="../mainwin.cpp" line="132"/>
+        <location filename="../mainwin.cpp" line="146"/>
         <source>New</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../mainwin.cpp" line="148"/>
+        <location filename="../mainwin.cpp" line="155"/>
         <source>Open</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../mainwin.cpp" line="75"/>
+        <location filename="../mainwin.cpp" line="82"/>
         <source>Projector</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../mainwin.cpp" line="77"/>
+        <location filename="../mainwin.cpp" line="84"/>
         <source>Show / hide projector output (F5)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../mainwin.cpp" line="79"/>
+        <location filename="../mainwin.cpp" line="86"/>
+        <location filename="../mainwin.cpp" line="590"/>
         <source>Black</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../mainwin.cpp" line="81"/>
+        <location filename="../mainwin.cpp" line="88"/>
         <source>Blank the projector (B)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../mainwin.cpp" line="86"/>
+        <location filename="../mainwin.cpp" line="93"/>
         <source>Song library</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../mainwin.cpp" line="88"/>
+        <location filename="../mainwin.cpp" line="95"/>
         <source>Media library</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../mainwin.cpp" line="90"/>
+        <location filename="../mainwin.cpp" line="97"/>
         <source>Settings</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../mainwin.cpp" line="99"/>
         <location filename="../mainwin.cpp" line="106"/>
         <location filename="../mainwin.cpp" line="113"/>
-        <location filename="../mainwin.cpp" line="123"/>
-        <location filename="../mainwin.cpp" line="137"/>
+        <location filename="../mainwin.cpp" line="120"/>
+        <location filename="../mainwin.cpp" line="130"/>
+        <location filename="../mainwin.cpp" line="144"/>
         <source>Back</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../mainwin.cpp" line="100"/>
-        <location filename="../mainwin.cpp" line="124"/>
-        <location filename="../mainwin.cpp" line="138"/>
+        <location filename="../mainwin.cpp" line="107"/>
+        <location filename="../mainwin.cpp" line="131"/>
+        <location filename="../mainwin.cpp" line="145"/>
         <source>Back to the presentation</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../mainwin.cpp" line="107"/>
+        <location filename="../mainwin.cpp" line="114"/>
         <source>Back to the presentation without changes</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../mainwin.cpp" line="109"/>
-        <location filename="../mainwin.cpp" line="119"/>
-        <location filename="../mainwin.cpp" line="133"/>
+        <location filename="../mainwin.cpp" line="116"/>
+        <location filename="../mainwin.cpp" line="126"/>
+        <location filename="../mainwin.cpp" line="140"/>
         <source>Apply</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../mainwin.cpp" line="110"/>
+        <location filename="../mainwin.cpp" line="117"/>
         <source>Put the selected passage into the playlist</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../mainwin.cpp" line="114"/>
-        <location filename="../mainwin.cpp" line="165"/>
+        <location filename="../mainwin.cpp" line="121"/>
+        <location filename="../mainwin.cpp" line="172"/>
         <source>Add</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../mainwin.cpp" line="115"/>
+        <location filename="../mainwin.cpp" line="122"/>
         <source>Update</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../mainwin.cpp" line="116"/>
+        <location filename="../mainwin.cpp" line="123"/>
         <source>Take over the newer version of the original file</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../mainwin.cpp" line="120"/>
+        <location filename="../mainwin.cpp" line="127"/>
         <source>Put the selected entries into the playlist</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../mainwin.cpp" line="126"/>
+        <location filename="../mainwin.cpp" line="133"/>
         <source>Type in a new song</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../mainwin.cpp" line="128"/>
+        <location filename="../mainwin.cpp" line="135"/>
         <source>Lyrics, parts and order of the song</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../mainwin.cpp" line="130"/>
+        <location filename="../mainwin.cpp" line="137"/>
         <source>Import lyrics files downloaded from SongSelect (*.txt)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../mainwin.cpp" line="134"/>
+        <location filename="../mainwin.cpp" line="141"/>
         <source>Put the selected songs into the playlist</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../mainwin.cpp" line="140"/>
+        <location filename="../mainwin.cpp" line="147"/>
         <source>Properties</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../mainwin.cpp" line="141"/>
+        <location filename="../mainwin.cpp" line="148"/>
         <source>Name, date, time and note</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../mainwin.cpp" line="131"/>
-        <location filename="../mainwin.cpp" line="142"/>
+        <location filename="../mainwin.cpp" line="138"/>
+        <location filename="../mainwin.cpp" line="149"/>
         <source>Delete</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../mainwin.cpp" line="129"/>
-        <location filename="../mainwin.cpp" line="143"/>
+        <location filename="../mainwin.cpp" line="136"/>
+        <location filename="../mainwin.cpp" line="150"/>
         <source>Import</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../mainwin.cpp" line="144"/>
+        <location filename="../mainwin.cpp" line="151"/>
         <source>Import events from files (*.cwm)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../mainwin.cpp" line="145"/>
+        <location filename="../mainwin.cpp" line="152"/>
         <source>Export</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../mainwin.cpp" line="146"/>
+        <location filename="../mainwin.cpp" line="153"/>
         <source>Save the selected event as a file, e.g. for another computer</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../mainwin.cpp" line="149"/>
+        <location filename="../mainwin.cpp" line="156"/>
         <source>Open the selected event in the presentation</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../mainwin.cpp" line="152"/>
+        <location filename="../mainwin.cpp" line="159"/>
         <source>Event...</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../mainwin.cpp" line="153"/>
+        <location filename="../mainwin.cpp" line="160"/>
         <source>Template...</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../mainwin.cpp" line="127"/>
-        <location filename="../mainwin.cpp" line="166"/>
+        <location filename="../mainwin.cpp" line="134"/>
+        <location filename="../mainwin.cpp" line="173"/>
         <source>Edit</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../mainwin.cpp" line="172"/>
+        <location filename="../mainwin.cpp" line="179"/>
         <source>File...</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../mainwin.cpp" line="173"/>
+        <location filename="../mainwin.cpp" line="180"/>
         <source>From media library...</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../mainwin.cpp" line="400"/>
-        <location filename="../mainwin.cpp" line="422"/>
+        <location filename="../mainwin.cpp" line="490"/>
+        <location filename="../mainwin.cpp" line="512"/>
         <source>Add files</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../mainwin.cpp" line="117"/>
-        <location filename="../mainwin.cpp" line="167"/>
+        <location filename="../mainwin.cpp" line="124"/>
+        <location filename="../mainwin.cpp" line="174"/>
         <source>Remove</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../mainwin.cpp" line="69"/>
+        <location filename="../mainwin.cpp" line="76"/>
         <source>New event (Ctrl+N)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../mainwin.cpp" line="70"/>
+        <location filename="../mainwin.cpp" line="77"/>
         <source>Events</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../mainwin.cpp" line="71"/>
+        <location filename="../mainwin.cpp" line="78"/>
         <source>Open or manage events and templates (Ctrl+O)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../mainwin.cpp" line="168"/>
+        <location filename="../mainwin.cpp" line="175"/>
         <source>Move up</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../mainwin.cpp" line="169"/>
+        <location filename="../mainwin.cpp" line="176"/>
         <source>Move down</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../mainwin.cpp" line="176"/>
+        <location filename="../mainwin.cpp" line="183"/>
         <source>YouTube video...</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../mainwin.cpp" line="179"/>
+        <location filename="../mainwin.cpp" line="186"/>
         <source>Blank entry</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../mainwin.cpp" line="182"/>
+        <location filename="../mainwin.cpp" line="188"/>
+        <source>Countdown...</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../mainwin.cpp" line="191"/>
         <source>Song...</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../mainwin.cpp" line="184"/>
+        <location filename="../mainwin.cpp" line="193"/>
         <source>Bible text...</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../mainwin.cpp" line="186"/>
+        <location filename="../mainwin.cpp" line="195"/>
         <source>Own slide...</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../mainwin.cpp" line="192"/>
+        <location filename="../mainwin.cpp" line="201"/>
         <source>Play</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../mainwin.cpp" line="193"/>
+        <location filename="../mainwin.cpp" line="202"/>
         <source>Pause</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../mainwin.cpp" line="194"/>
+        <location filename="../mainwin.cpp" line="203"/>
         <source>Stop</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../mainwin.cpp" line="318"/>
+        <location filename="../mainwin.cpp" line="249"/>
+        <source>End</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../mainwin.cpp" line="250"/>
+        <source>The projector shows the slide selected here (also: Return or double click)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../mainwin.cpp" line="378"/>
         <source>Edit...</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../mainwin.cpp" line="320"/>
+        <location filename="../mainwin.cpp" line="381"/>
         <source>Background...</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../mainwin.cpp" line="624"/>
+        <location filename="../mainwin.cpp" line="384"/>
+        <source>Advance automatically...</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../mainwin.cpp" line="559"/>
+        <source>Countdown</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../mainwin.cpp" line="589"/>
+        <source>Video</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../mainwin.cpp" line="591"/>
+        <source>Keep the last frame</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../mainwin.cpp" line="592"/>
+        <source>Start again (loop)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../mainwin.cpp" line="604"/>
+        <source>At the end of the video:</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../mainwin.cpp" line="793"/>
         <source>The changes of the event could not be saved.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../mainwin.cpp" line="659"/>
+        <location filename="../mainwin.cpp" line="828"/>
         <source>Background</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../mainwin.cpp" line="660"/>
+        <location filename="../mainwin.cpp" line="829"/>
         <source>Default</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../mainwin.cpp" line="661"/>
+        <location filename="../mainwin.cpp" line="830"/>
         <source>Default: the background of the song, otherwise the one of the event.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../mainwin.cpp" line="988"/>
+        <location filename="../mainwin.cpp" line="1180"/>
         <source>CCLI Song # %1</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../mainwin.cpp" line="1006"/>
+        <location filename="../mainwin.cpp" line="1198"/>
         <source>CCLI License # %1</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../mainwin.cpp" line="1144"/>
+        <location filename="../mainwin.cpp" line="1340"/>
         <source>Create a new event or open one under &quot;Events&quot;.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../mainwin.cpp" line="1145"/>
+        <location filename="../mainwin.cpp" line="1341"/>
         <source>Add files or text slides to the playlist.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../mainwin.cpp" line="1226"/>
+        <location filename="../mainwin.cpp" line="1379"/>
+        <source>Video – plays on the projector</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../mainwin.cpp" line="1453"/>
         <source>Black slide before the text</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../mainwin.cpp" line="437"/>
-        <location filename="../mainwin.cpp" line="444"/>
-        <location filename="../mainwin.cpp" line="447"/>
-        <location filename="../mainwin.cpp" line="480"/>
+        <location filename="../mainwin.cpp" line="1676"/>
+        <source>Announcements</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../mainwin.cpp" line="1677"/>
+        <source>On the projector: %1 – slide %2 of %3. Clicks here only change the preview.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../mainwin.cpp" line="1680"/>
+        <source>Countdown %1</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../mainwin.cpp" line="1683"/>
+        <source>On the projector: Countdown %1. Clicks here only change the preview.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../mainwin.cpp" line="1685"/>
+        <source>Countdown %1 in the corner of the projector</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../mainwin.cpp" line="1794"/>
+        <source>Advance automatically</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../mainwin.cpp" line="1795"/>
+        <source>Advance automatically and start again at the end</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../mainwin.cpp" line="1798"/>
+        <source> s</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../mainwin.cpp" line="1804"/>
+        <source>For announcements: they keep running on the projector while you look at or edit other entries. Changes of the file are shown from the next round on.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../mainwin.cpp" line="1811"/>
+        <source>Every</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../mainwin.cpp" line="527"/>
+        <location filename="../mainwin.cpp" line="534"/>
+        <location filename="../mainwin.cpp" line="537"/>
+        <location filename="../mainwin.cpp" line="580"/>
         <source>YouTube video</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../mainwin.cpp" line="438"/>
+        <location filename="../mainwin.cpp" line="528"/>
         <source>Link of the YouTube video:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../mainwin.cpp" line="444"/>
-        <location filename="../mainwin.cpp" line="1160"/>
+        <location filename="../mainwin.cpp" line="534"/>
+        <location filename="../mainwin.cpp" line="1356"/>
         <source>This is not a valid YouTube link.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../mainwin.cpp" line="461"/>
-        <location filename="../mainwin.cpp" line="1221"/>
+        <location filename="../mainwin.cpp" line="551"/>
+        <location filename="../mainwin.cpp" line="1448"/>
         <source>Blank</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../mainwin.cpp" line="624"/>
+        <location filename="../mainwin.cpp" line="793"/>
         <source>Save event</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../mainwin.cpp" line="1153"/>
+        <location filename="../mainwin.cpp" line="1349"/>
         <source>Blank – the projector shows nothing</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../mainwin.cpp" line="1166"/>
+        <location filename="../mainwin.cpp" line="1362"/>
         <source>YouTube video – plays on the projector</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../mainwin.cpp" line="1177"/>
+        <location filename="../mainwin.cpp" line="1414"/>
+        <location filename="../mainwin.cpp" line="1471"/>
         <source>Converting presentation...</source>
         <translation type="unfinished"></translation>
     </message>
@@ -1220,69 +1396,79 @@ Please make sure your church may use this translation (e.g. for projection in se
 <context>
     <name>MediaItem</name>
     <message>
-        <location filename="../mediaitem.cpp" line="72"/>
+        <location filename="../mediaitem.cpp" line="76"/>
         <source>Image</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../mediaitem.cpp" line="73"/>
+        <location filename="../mediaitem.cpp" line="77"/>
         <source>PDF</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../mediaitem.cpp" line="74"/>
+        <location filename="../mediaitem.cpp" line="78"/>
         <source>Presentation</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../mediaitem.cpp" line="75"/>
+        <location filename="../mediaitem.cpp" line="79"/>
         <source>Song</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../mediaitem.cpp" line="76"/>
+        <location filename="../mediaitem.cpp" line="80"/>
         <source>Bible text</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../mediaitem.cpp" line="77"/>
+        <location filename="../mediaitem.cpp" line="81"/>
         <source>Own slide</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../mediaitem.cpp" line="78"/>
+        <location filename="../mediaitem.cpp" line="82"/>
         <source>YouTube video</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../mediaitem.cpp" line="79"/>
+        <location filename="../mediaitem.cpp" line="83"/>
         <source>Blank</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../mediaitem.cpp" line="80"/>
+        <location filename="../mediaitem.cpp" line="84"/>
+        <source>Countdown</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../mediaitem.cpp" line="85"/>
+        <source>Video</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../mediaitem.cpp" line="86"/>
         <source>Unknown</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../mediaitem.cpp" line="142"/>
-        <source>Images, PDF and presentations</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../mediaitem.cpp" line="149"/>
+        <location filename="../mediaitem.cpp" line="160"/>
         <source>PDF and presentations</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../mediaitem.cpp" line="144"/>
-        <location filename="../mediaitem.cpp" line="151"/>
-        <location filename="../mediaitem.cpp" line="158"/>
+        <location filename="../mediaitem.cpp" line="155"/>
+        <location filename="../mediaitem.cpp" line="162"/>
+        <location filename="../mediaitem.cpp" line="169"/>
         <source>All files</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../mediaitem.cpp" line="156"/>
+        <location filename="../mediaitem.cpp" line="152"/>
+        <source>Images, videos, PDF and presentations</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../mediaitem.cpp" line="167"/>
         <source>Images</source>
         <translation type="unfinished"></translation>
     </message>
@@ -1290,25 +1476,25 @@ Please make sure your church may use this translation (e.g. for projection in se
 <context>
     <name>MediaLibrary</name>
     <message>
-        <location filename="../medialibrary.cpp" line="225"/>
+        <location filename="../medialibrary.cpp" line="236"/>
         <source>Unsupported file type: %1</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../medialibrary.cpp" line="231"/>
+        <location filename="../medialibrary.cpp" line="242"/>
         <source>Cannot read %1.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../medialibrary.cpp" line="254"/>
-        <location filename="../medialibrary.cpp" line="317"/>
-        <location filename="../medialibrary.cpp" line="353"/>
+        <location filename="../medialibrary.cpp" line="265"/>
+        <location filename="../medialibrary.cpp" line="328"/>
+        <location filename="../medialibrary.cpp" line="364"/>
         <source>%1 could not be copied into the media library.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../medialibrary.cpp" line="311"/>
-        <location filename="../medialibrary.cpp" line="339"/>
+        <location filename="../medialibrary.cpp" line="322"/>
+        <location filename="../medialibrary.cpp" line="350"/>
         <source>The original file %1 no longer exists.</source>
         <translation type="unfinished"></translation>
     </message>
@@ -1316,7 +1502,22 @@ Please make sure your church may use this translation (e.g. for projection in se
 <context>
     <name>PlaylistDelegate</name>
     <message>
-        <location filename="../playlistdelegate.cpp" line="93"/>
+        <location filename="../playlistdelegate.cpp" line="89"/>
+        <source>Loop</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../playlistdelegate.cpp" line="91"/>
+        <source>Keeps the last frame</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../playlistdelegate.cpp" line="102"/>
+        <source>Loop every %1 s</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../playlistdelegate.cpp" line="109"/>
         <source>File missing</source>
         <translation type="unfinished"></translation>
     </message>

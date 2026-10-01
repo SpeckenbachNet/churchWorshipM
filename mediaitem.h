@@ -32,7 +32,9 @@ enum Type {
     Bible,      // text based
     Custom,     // text based: spontaneous own slide(s)
     YouTube,    // source = video URL, plays on the projector
-    Blank       // planned empty entry: projector shows nothing
+    Blank,      // planned empty entry: projector shows nothing
+    Countdown,  // time running down before the service (CountdownRole)
+    Video       // local video file (VideoRole: what happens at the end)
 };
 
 enum Role {
@@ -42,7 +44,10 @@ enum Role {
     BibleRole,                    // QJsonObject of a BiblePassage (bible entries chosen on the bible page)
     LibraryRole,                  // id of the media library entry (file based types)
     SongRole,                     // QJsonObject {id, order} of a song from the song library
-    BackgroundRole                // QJsonObject of the own SlideBackground (text types), empty = as event
+    BackgroundRole,               // QJsonObject of the own SlideBackground (text types), empty = as event
+    AutoAdvanceRole,              // seconds between the slides of a loop (announcements), 0 = off
+    CountdownRole,                // QJsonObject of the CountdownSettings
+    VideoRole                     // QJsonObject {"end": "black" | "last" | "loop"}
 };
 
 Type    typeFromFile(const QString &path);
@@ -58,6 +63,9 @@ Type    typeFromKey(const QString &key);
 QString mediaFileFilter();      // everything the media library accepts
 QString documentFileFilter();   // PDF + presentations
 QString imageFileFilter();
+
+// Common video formats (the decoders come with Qt Multimedia)
+bool isVideoSuffix(const QString &suffix);
 
 // Extracts the 11 character video id from any common YouTube URL (empty if not found)
 QString youTubeId(const QString &url);

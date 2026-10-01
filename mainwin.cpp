@@ -17,10 +17,13 @@
 #include "songeditor.h"
 #include "backgroundpicker.h"
 
+#include <QCheckBox>
 #include <QCloseEvent>
 #include <QDialogButtonBox>
 #include <QFileDialog>
 #include <QFileInfo>
+#include <QFrame>
+#include <QHBoxLayout>
 #include <QInputDialog>
 #include <QJsonArray>
 #include <algorithm>
@@ -31,8 +34,12 @@
 #include <QMessageBox>
 #include <QNetworkAccessManager>
 #include <QNetworkReply>
+#include <QPushButton>
+#include <QRadioButton>
 #include <QUrlQuery>
 #include <QShortcut>
+#include <QSlider>
+#include <QSpinBox>
 #include <QVBoxLayout>
 
 namespace {
@@ -178,6 +185,8 @@ void MainWin::initializeForm() {
     addMenu->addSeparator();
     addMenu->addAction(MediaItem::typeIcon(MediaItem::Blank), tr("Blank entry"),
                        this, &MainWin::addBlank);
+    addMenu->addAction(MediaItem::typeIcon(MediaItem::Countdown), tr("Countdown..."),
+                       this, &MainWin::addCountdown);
     addMenu->addSeparator();
     addMenu->addAction(MediaItem::typeIcon(MediaItem::Song), tr("Song..."),
                        this, [this] { openSongsPage(true); });
@@ -188,7 +197,7 @@ void MainWin::initializeForm() {
     m_addBtn->setMenu(addMenu);
     m_addBtn->setPopupMode(QToolButton::InstantPopup);
 
-    // --- Video controls (only visible for YouTube entries)
+    // --- Video controls (only visible for YouTube and local videos)
     m_playBtn  = ui->videoToolbar->addButton("playBtn",  tr("Play"),  ":icons/play",  true);
     m_pauseBtn = ui->videoToolbar->addButton("pauseBtn", tr("Pause"), ":icons/pause", true);
     m_stopBtn  = ui->videoToolbar->addButton("stopBtn",  tr("Stop"),  ":icons/stop",  true);
@@ -214,6 +223,39 @@ void MainWin::initializeForm() {
     slides->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
 
     ui->previewLabel->installEventFilter(this);
+
+    // Local videos: position bar and time below the video buttons
+    m_videoRow = new QWidget(ui->rightPanel);
+    m_videoSlider = new QSlider(Qt::Horizontal, m_videoRow);
+    m_videoSlider->setPageStep(10000);   // a click beside the handle: 10 seconds
+    m_videoTime = new QLabel(m_videoRow);
+    m_videoTime->setMinimumWidth(QFontMetrics(font()).horizontalAdvance(QStringLiteral("00:00 / 00:00")) + 8);
+    m_videoTime->setAlignment(Qt::AlignRight | Qt::AlignVCenter);
+    auto *videoRowLayout = new QHBoxLayout(m_videoRow);
+    videoRowLayout->setContentsMargins(8, 0, 8, 0);
+    videoRowLayout->addWidget(m_videoSlider, 1);
+    videoRowLayout->addWidget(m_videoTime);
+    ui->rightPanelLayout->insertWidget(ui->rightPanelLayout->indexOf(ui->videoToolbar) + 1, m_videoRow);
+    m_videoRow->hide();
+
+    // Loop running on the projector: shown above the preview
+    m_loopBar = new QFrame(ui->rightPanel);
+    m_loopBar->setObjectName("loopBar");
+    m_loopBar->setStyleSheet(QStringLiteral("#loopBar { background: #b3261e; border-radius: 6px; }"
+                                            "#loopBar QLabel { color: white; }"));
+    m_loopLabel = new QLabel(m_loopBar);
+    m_loopLabel->setWordWrap(true);
+    m_loopLabel->setTextFormat(Qt::PlainText);
+    auto *loopEndBtn = new QPushButton(tr("End"), m_loopBar);
+    loopEndBtn->setToolTip(tr("The projector shows the slide selected here (also: Return or double click)"));
+    auto *loopLayout = new QHBoxLayout(m_loopBar);
+    loopLayout->setContentsMargins(12, 6, 8, 6);
+    loopLayout->addWidget(new QLabel(QStringLiteral("\u25B6"), m_loopBar));
+    loopLayout->addWidget(m_loopLabel, 1);
+    loopLayout->addWidget(loopEndBtn);
+    ui->rightPanelLayout->insertWidget(0, m_loopBar);
+    m_loopBar->hide();
+    connect(loopEndBtn, &QPushButton::clicked, this, &MainWin::goLive);
 
     ui->splitter->setStretchFactor(0, 0);
     ui->splitter->setStretchFactor(1, 1);
@@ -303,6 +345,24 @@ void MainWin::initializeConnections() {
     connect(m_playBtn,  &QToolButton::clicked, m_beamer, &BeamerWindow::playVideo);
     connect(m_pauseBtn, &QToolButton::clicked, m_beamer, &BeamerWindow::pauseVideo);
     connect(m_stopBtn,  &QToolButton::clicked, m_beamer, &BeamerWindow::stopVideo);
+    connect(m_beamer, &BeamerWindow::videoDurationChanged, this, [this](qint64 ms) {
+        m_videoDuration = ms;
+        updateVideoTime(m_videoSlider->value());
+    });
+    connect(m_beamer, &BeamerWindow::videoPositionChanged, this, &MainWin::updateVideoTime);
+    connect(m_videoSlider, &QSlider::valueChanged, this, [this](int value) {
+        if (!m_videoSliderUpdating) {
+            m_beamer->seekVideo(value);   // dragged or clicked by the user
+        }
+    });
+    // Preview image of a video in the library is made in the background
+    connect(m_library, &MediaLibrary::thumbnailChanged, this, [this](const QString &id) {
+        QListWidgetItem *item = ui->playlistWidget->currentItem();
+        if (item && !m_localVideo.isEmpty() && item->data(MediaItem::LibraryRole).toString() == id) {
+            m_videoThumb = m_library->thumbnail(id);
+            updatePreview();
+        }
+    });
 
     connect(ui->playlistWidget, &QListWidget::currentItemChanged, this,
             [this](QListWidgetItem *current) { showEntry(current); });
@@ -316,12 +376,20 @@ void MainWin::initializeConnections() {
         }
         QMenu menu(this);
         menu.addAction(tr("Edit..."), this, [this, item] { editEntry(item); });
-        if (MediaItem::isTextType(MediaItem::Type(item->data(MediaItem::TypeRole).toInt()))) {
+        const auto type = MediaItem::Type(item->data(MediaItem::TypeRole).toInt());
+        if (MediaItem::isTextType(type) || type == MediaItem::Countdown) {
             menu.addAction(tr("Background..."), this, [this, item] { editEntryBackground(item); });
+        }
+        if (MediaItem::isTextType(type) || type == MediaItem::Pdf || type == MediaItem::PowerPoint) {
+            menu.addAction(tr("Advance automatically..."), this, [this, item] { editAutoAdvance(item); });
         }
         menu.exec(ui->playlistWidget->viewport()->mapToGlobal(pos));
     });
     connect(ui->slidesListWidget, &QListWidget::currentRowChanged, this, &MainWin::showSlide);
+    // While a loop runs: double click puts the slide on the projector
+    connect(ui->slidesListWidget, &QListWidget::itemDoubleClicked, this, &MainWin::goLive);
+    connect(&m_loopTimer, &QTimer::timeout, this, &MainWin::loopTick);
+    connect(&m_countdownTimer, &QTimer::timeout, this, &MainWin::countdownTick);
 
     // Every change of the playlist model is saved automatically (incl. drag & drop)
     QAbstractItemModel *model = ui->playlistWidget->model();
@@ -372,12 +440,34 @@ void MainWin::initializeShortcuts() {
     presenterShortcut(QKeySequence::New,  this, [this] { ui->eventsBrowser->newEvent(); });
     presenterShortcut(QKeySequence::Delete, ui->playlistWidget, &MainWin::removeSelected);
 
+    // Ends a running loop: the projector shows the selected slide (only active during a loop)
+    m_goLiveShortcut = new QShortcut(Qt::Key_Return, ui->presenterPage);
+    m_goLiveShortcut->setContext(Qt::WidgetWithChildrenShortcut);
+    m_goLiveShortcut->setEnabled(false);
+    connect(m_goLiveShortcut, &QShortcut::activated, this, &MainWin::goLive);
+
     // Projector control works everywhere, also while the settings are open
     connect(new QShortcut(Qt::Key_B, this), &QShortcut::activated, m_blackBtn, &QToolButton::toggle);
     connect(new QShortcut(Qt::Key_F5, this), &QShortcut::activated, m_beamerBtn, &QToolButton::toggle);
 }
 
 // ====== Playlist ======
+
+namespace {
+
+BeamerWindow::VideoEnd videoEndOf(const QListWidgetItem *item)
+{
+    const QString end = item->data(MediaItem::VideoRole).toJsonObject().value("end").toString();
+    if (end == QLatin1String("last")) {
+        return BeamerWindow::VideoEnd::LastFrame;
+    }
+    if (end == QLatin1String("loop")) {
+        return BeamerWindow::VideoEnd::Loop;
+    }
+    return BeamerWindow::VideoEnd::Black;
+}
+
+} // namespace
 
 QListWidgetItem *MainWin::createEntry(const QString &title, MediaItem::Type type,
                                       const QString &source, const QString &text) {
@@ -461,6 +551,16 @@ void MainWin::addBlank() {
     insertEntry(createEntry(tr("Blank"), MediaItem::Blank, {}, {}));
 }
 
+void MainWin::addCountdown() {
+    CountdownDialog dlg(CountdownSettings::defaults(), this);
+    if (dlg.exec() != QDialog::Accepted) {
+        return;
+    }
+    QListWidgetItem *item = createEntry(tr("Countdown"), MediaItem::Countdown, {}, {});
+    item->setData(MediaItem::CountdownRole, dlg.settings().toJson());
+    insertEntry(item);
+}
+
 void MainWin::fetchYouTubeTitle(const QString &url) {
     // oEmbed delivers the title without an API key
     QUrl request(QStringLiteral("https://www.youtube.com/oembed"));
@@ -484,6 +584,52 @@ void MainWin::fetchYouTubeTitle(const QString &url) {
     });
 }
 
+void MainWin::editVideoSettings(QListWidgetItem *item) {
+    QDialog dlg(this);
+    dlg.setWindowTitle(tr("Video"));
+    auto *black = new QRadioButton(tr("Black"), &dlg);
+    auto *last = new QRadioButton(tr("Keep the last frame"), &dlg);
+    auto *loop = new QRadioButton(tr("Start again (loop)"), &dlg);
+    const BeamerWindow::VideoEnd end = videoEndOf(item);
+    (end == BeamerWindow::VideoEnd::LastFrame ? last : end == BeamerWindow::VideoEnd::Loop ? loop : black)
+        ->setChecked(true);
+    auto *buttons = new QDialogButtonBox(QDialogButtonBox::Ok | QDialogButtonBox::Cancel, &dlg);
+    connect(buttons, &QDialogButtonBox::accepted, &dlg, &QDialog::accept);
+    connect(buttons, &QDialogButtonBox::rejected, &dlg, &QDialog::reject);
+    auto *layout = new QVBoxLayout(&dlg);
+    layout->setContentsMargins(20, 20, 20, 16);
+    layout->setSpacing(8);
+    layout->addWidget(new QLabel(QStringLiteral("<b>%1</b>").arg(item->text().toHtmlEscaped()), &dlg));
+    layout->addSpacing(4);
+    layout->addWidget(new QLabel(tr("At the end of the video:"), &dlg));
+    layout->addWidget(black);
+    layout->addWidget(last);
+    layout->addWidget(loop);
+    layout->addSpacing(8);
+    layout->addWidget(buttons);
+    dlg.resize(400, dlg.sizeHint().height());
+    if (dlg.exec() != QDialog::Accepted) {
+        return;
+    }
+    const QString key = last->isChecked() ? QStringLiteral("last") : loop->isChecked() ? QStringLiteral("loop")
+                                                                                     : QStringLiteral("black");
+    item->setData(MediaItem::VideoRole, QJsonObject{{"end", key}});
+    if (item == ui->playlistWidget->currentItem()) {
+        showEntry(item);   // reloads the video with the new setting
+    }
+}
+
+void MainWin::updateVideoTime(qint64 position) {
+    const auto text = [](qint64 ms) { return CountdownDeck::timeText(int(ms / 1000)); };
+    m_videoTime->setText(QStringLiteral("%1 / %2").arg(text(position), text(m_videoDuration)));
+    if (!m_videoSlider->isSliderDown()) {
+        m_videoSliderUpdating = true;
+        m_videoSlider->setRange(0, int(m_videoDuration));
+        m_videoSlider->setValue(int(position));
+        m_videoSliderUpdating = false;
+    }
+}
+
 void MainWin::fetchYouTubeThumbnail(const QString &videoId) {
     const QUrl url(QStringLiteral("https://img.youtube.com/vi/%1/hqdefault.jpg").arg(videoId));
     QNetworkReply *reply = m_network->get(QNetworkRequest(url));
@@ -492,7 +638,7 @@ void MainWin::fetchYouTubeThumbnail(const QString &videoId) {
         if (videoId != m_youTubeId) {
             return;  // user has already moved on
         }
-        m_youTubeThumb = QImage::fromData(reply->readAll());
+        m_videoThumb = QImage::fromData(reply->readAll());
         updatePreview();
     });
 }
@@ -502,6 +648,20 @@ void MainWin::editEntry(QListWidgetItem *item) {
         return;
     }
     const auto type = MediaItem::Type(item->data(MediaItem::TypeRole).toInt());
+    if (type == MediaItem::Video) {
+        editVideoSettings(item);
+        return;
+    }
+    if (type == MediaItem::Countdown) {
+        CountdownDialog dlg(CountdownSettings::fromJson(item->data(MediaItem::CountdownRole).toJsonObject()), this);
+        if (dlg.exec() == QDialog::Accepted) {
+            item->setData(MediaItem::CountdownRole, dlg.settings().toJson());
+            if (item == ui->playlistWidget->currentItem() && item != m_countdownItem) {
+                showEntry(item);
+            }
+        }
+        return;
+    }
     if (!MediaItem::isTextType(type)) {
         ui->playlistWidget->editItem(item);  // files: only rename
         return;
@@ -536,7 +696,14 @@ void MainWin::removeSelected() {
     if (row < 0) {
         return;
     }
-    delete ui->playlistWidget->takeItem(row);
+    QListWidgetItem *item = ui->playlistWidget->takeItem(row);
+    if (item == m_loopItem) {
+        m_loopItem = nullptr;   // the loop keeps running with its last version
+    }
+    if (item == m_countdownItem) {
+        m_countdownItem = nullptr;   // the countdown keeps running
+    }
+    delete item;
 }
 
 void MainWin::moveSelected(int delta) {
@@ -577,6 +744,8 @@ void MainWin::loadEvent(const QString &id) {
     saveEvent();   // pending changes belong to the previous event
 
     m_loading = true;
+    m_loopItem = nullptr;   // a running loop / countdown stays on the projector
+    m_countdownItem = nullptr;
     ui->playlistWidget->clear();
     m_eventId = m_events->event(id).isValid() ? id : QString();
     m_eventBackground = m_events->event(m_eventId).background;
@@ -704,6 +873,20 @@ QJsonObject MainWin::entryToJson(const QListWidgetItem *item) const {
             o.insert("library", libraryId);
         }
     }
+    const int autoAdvance = item->data(MediaItem::AutoAdvanceRole).toInt();
+    if (autoAdvance > 0) {
+        o.insert("autoAdvance", autoAdvance);
+    }
+    if (type == MediaItem::Video && !item->data(MediaItem::VideoRole).toJsonObject().isEmpty()) {
+        o.insert("video", item->data(MediaItem::VideoRole).toJsonObject());
+    }
+    if (type == MediaItem::Countdown) {
+        o.insert("countdown", item->data(MediaItem::CountdownRole).toJsonObject());
+        const QJsonObject background = item->data(MediaItem::BackgroundRole).toJsonObject();
+        if (!background.isEmpty()) {
+            o.insert("background", background);
+        }
+    }
     return o;
 }
 
@@ -717,6 +900,15 @@ QListWidgetItem *MainWin::entryFromJson(const QJsonObject &o) {
     }
     if (o.contains("background")) {
         item->setData(MediaItem::BackgroundRole, o.value("background").toObject());
+    }
+    if (o.contains("autoAdvance")) {
+        item->setData(MediaItem::AutoAdvanceRole, o.value("autoAdvance").toInt());
+    }
+    if (o.contains("countdown")) {
+        item->setData(MediaItem::CountdownRole, o.value("countdown").toObject());
+    }
+    if (o.contains("video")) {
+        item->setData(MediaItem::VideoRole, o.value("video").toObject());
     }
     if (o.contains("song")) {
         item->setData(MediaItem::SongRole, o.value("song").toObject());
@@ -1133,9 +1325,13 @@ void MainWin::showEntry(QListWidgetItem *item) {
     const bool startAtLast = m_startAtLastSlide;
     m_startAtLastSlide = false;
 
-    m_beamer->unloadVideo();
+    if (!isHolding()) {
+        m_beamer->unloadVideo();
+    }
     m_youTubeId.clear();
-    m_youTubeThumb = QImage();
+    m_localVideo.clear();
+    m_videoThumb = QImage();
+    m_videoRow->hide();
     ui->previewLabel->clear();
     ui->videoToolbar->hide();
     ui->slidesListWidget->show();
@@ -1164,9 +1360,50 @@ void MainWin::showEntry(QListWidgetItem *item) {
         ui->slidesListWidget->hide();
         ui->videoToolbar->show();
         ui->previewLabel->setText(tr("YouTube video – plays on the projector"));
-        m_beamer->setImage(QImage());
-        m_beamer->loadYouTube(m_youTubeId);
+        if (!isHolding()) {   // otherwise loaded when the loop / countdown is ended
+            m_beamer->setImage(QImage());
+            m_beamer->loadYouTube(m_youTubeId);
+        }
         fetchYouTubeThumbnail(m_youTubeId);
+        return;
+    }
+
+    if (type == MediaItem::Video) {
+        m_localVideo = item->data(MediaItem::SourceRole).toString();
+        m_localVideoEnd = videoEndOf(item);
+        ui->slidesListWidget->hide();
+        ui->videoToolbar->show();
+        m_videoRow->show();
+        m_videoDuration = 0;
+        updateVideoTime(0);
+        ui->previewLabel->setText(tr("Video – plays on the projector"));
+        const QString libraryId = item->data(MediaItem::LibraryRole).toString();
+        if (!libraryId.isEmpty()) {
+            m_videoThumb = m_library->thumbnail(libraryId);   // may follow later (thumbnailChanged)
+            updatePreview();
+        }
+        if (!isHolding()) {   // otherwise loaded when the loop / countdown is ended
+            m_beamer->setImage(QImage());
+            m_beamer->loadVideo(m_localVideo, m_localVideoEnd);
+        }
+        return;
+    }
+
+    if (type == MediaItem::Countdown) {
+        const CountdownSettings settings = CountdownSettings::fromJson(item->data(MediaItem::CountdownRole).toJsonObject());
+        auto deck = std::make_unique<CountdownDeck>(settings);
+        deck->setBackground(entryBackground(item));
+        deck->setSecondsLeft(item == m_countdownItem ? m_countdownShown : settings.minutes * 60);
+        m_deck = std::move(deck);
+        ui->slidesListWidget->hide();
+        m_currentSlide = 0;
+        updatePreview();
+        // Starts right away: large it holds the projector, in the corner it runs above the rest
+        if (!isCountdownRunning() && (settings.corner || !isHolding())) {
+            startCountdown(item);
+        } else {
+            updateBeamer();
+        }
         return;
     }
 
@@ -1181,33 +1418,23 @@ void MainWin::showEntry(QListWidgetItem *item) {
         }
     }
 
+    // Text entries start black: nothing is shown before the first text (not in a loop)
+    const bool textEntry = MediaItem::isTextType(type);
+    const int blanks = textEntry && item->data(MediaItem::AutoAdvanceRole).toInt() == 0
+                               && settings.value("slides/leadingBlank", true).toBool() ? 1 : 0;
     QString error;
-    m_deck = SlideDeck::create(MediaItem::Type(item->data(MediaItem::TypeRole).toInt()),
-                               item->data(MediaItem::SourceRole).toString(),
-                               item->data(MediaItem::TextRole).toString(),
-                               item->data(MediaItem::BibleRole).toJsonObject(), &error,
-                               songCredits(item), songTranslationSlides(item));
+    m_deck = createDeck(item, &error, blanks > 0);
     if (!m_deck) {
         ui->previewLabel->setText(error);
         updateBeamer();
         return;
     }
+    m_shownBackground = textEntry ? entryBackground(item) : SlideBackground();
 
-    m_shownBackground = SlideBackground();
-    const bool textEntry = MediaItem::isTextType(MediaItem::Type(item->data(MediaItem::TypeRole).toInt()));
-    if (textEntry) {
-        m_shownBackground = entryBackground(item);
-        m_deck->setBackground(m_shownBackground);
-    }
     // Songs: the part of every slide as label ("Vers 1", "Chorus", ...)
     QStringList labels = songSlideLabels(item);
-    if (labels.size() != m_deck->count()) {
+    if (labels.size() != m_deck->count() - blanks) {
         labels.clear();   // lyrics of the entry differ from the library (copy only)
-    }
-    // Text entries start black: nothing is shown before the first text
-    const int blanks = textEntry && settings.value("slides/leadingBlank", true).toBool() ? 1 : 0;
-    if (blanks) {
-        m_deck = SlideDeck::withLeadingBlank(std::move(m_deck));
     }
 
     // Thumbnails
@@ -1230,6 +1457,34 @@ void MainWin::showEntry(QListWidgetItem *item) {
     const int start = startAtLast ? m_deck->count() - 1 : 0;
     ui->slidesListWidget->setCurrentRow(start);
     showSlide(start);
+
+    // Announcements: from now on they run on the projector by themselves
+    if (!isHolding() && item->data(MediaItem::AutoAdvanceRole).toInt() > 0 && m_deck->count() > 1) {
+        startLoop(item, start);
+    }
+}
+
+std::unique_ptr<SlideDeck> MainWin::createDeck(QListWidgetItem *item, QString *error, bool leadingBlank) const {
+    const auto type = MediaItem::Type(item->data(MediaItem::TypeRole).toInt());
+    if (type == MediaItem::PowerPoint
+        && PresentationConverter::cachedPdf(item->data(MediaItem::SourceRole).toString()).isEmpty()) {
+        *error = tr("Converting presentation...");
+        return nullptr;
+    }
+    auto deck = SlideDeck::create(type, item->data(MediaItem::SourceRole).toString(),
+                                  item->data(MediaItem::TextRole).toString(),
+                                  item->data(MediaItem::BibleRole).toJsonObject(), error,
+                                  songCredits(item), songTranslationSlides(item));
+    if (!deck) {
+        return nullptr;
+    }
+    if (MediaItem::isTextType(type)) {
+        deck->setBackground(entryBackground(item));
+        if (leadingBlank) {
+            deck = SlideDeck::withLeadingBlank(std::move(deck));
+        }
+    }
+    return deck;
 }
 
 void MainWin::showSlide(int index) {
@@ -1237,6 +1492,7 @@ void MainWin::showSlide(int index) {
         return;
     }
     m_currentSlide = index;
+    m_blackAfterCountdown = false;   // a slide was chosen: the projector follows again
     ui->slidesListWidget->scrollToItem(ui->slidesListWidget->item(index));
     updatePreview();
     updateBeamer();
@@ -1273,8 +1529,8 @@ void MainWin::updatePreview() {
     QImage image;
     if (m_deck && m_currentSlide >= 0) {
         image = m_deck->render(m_currentSlide, size);
-    } else if (!m_youTubeThumb.isNull()) {
-        image = m_youTubeThumb.scaled(size, Qt::KeepAspectRatio, Qt::SmoothTransformation);
+    } else if (!m_videoThumb.isNull()) {
+        image = m_videoThumb.scaled(size, Qt::KeepAspectRatio, Qt::SmoothTransformation);
     } else {
         return;
     }
@@ -1288,11 +1544,25 @@ void MainWin::updateBeamer() {
     if (!m_beamer->isVisible()) {
         return;
     }
-    if (!m_deck || m_currentSlide < 0) {
-        m_beamer->setImage(QImage());
-        return;
+    const QSize size = m_beamer->outputSize();
+    QImage image;   // null = black
+    if (m_blackAfterCountdown) {
+        // stays black until the next slide is chosen
+    } else if (isCountdownRunning() && (!m_countdownSettings.corner || m_countdownShown <= 0)) {
+        image = m_countdownDeck->render(0, size);   // large, or the end text
+    } else if (isLooping()) {
+        image = m_loopDeck->render(m_loopSlide, size);
+    } else if (m_deck && m_currentSlide >= 0) {
+        image = m_deck->render(m_currentSlide, size);
     }
-    m_beamer->setImage(m_deck->render(m_currentSlide, m_beamer->outputSize()));
+    if (isCountdownRunning() && m_countdownSettings.corner && m_countdownShown > 0) {
+        if (image.isNull()) {
+            image = QImage(SlideDeck::textSlideAspect.scaled(size, Qt::KeepAspectRatio), QImage::Format_RGB32);
+            image.fill(Qt::black);
+        }
+        CountdownDeck::paintCorner(image, m_countdownShown);
+    }
+    m_beamer->setImage(image);
 }
 
 void MainWin::setBeamerVisible(bool visible) {
@@ -1308,6 +1578,261 @@ void MainWin::setBeamerVisible(bool visible) {
 
 void MainWin::setBlack(bool black) {
     m_beamer->setBlack(black);
+}
+
+// ====== Loop (announcements) ======
+
+void MainWin::startLoop(QListWidgetItem *item, int slide) {
+    QString error;
+    auto deck = createDeck(item, &error, false);
+    if (!deck || deck->count() < 1) {
+        return;
+    }
+    m_beamer->unloadVideo();
+    m_loopItem = item;
+    m_loopDeck = std::move(deck);
+    m_loopSlide = qBound(0, slide, m_loopDeck->count() - 1);
+    m_loopSignature = loopSignature(item);
+    m_loopTimer.start(qMax(1, item->data(MediaItem::AutoAdvanceRole).toInt()) * 1000);
+    updateBeamer();
+    updateLiveBar();
+}
+
+void MainWin::stopLoop() {
+    m_loopTimer.stop();
+    m_loopDeck.reset();
+    m_loopItem = nullptr;
+    updateLiveBar();
+}
+
+void MainWin::loopTick() {
+    if (!isLooping()) {
+        return;
+    }
+    if (m_loopItem) {
+        // Interval may have been changed in the meantime
+        m_loopTimer.setInterval(qMax(1, m_loopItem->data(MediaItem::AutoAdvanceRole).toInt()) * 1000);
+    }
+    if (++m_loopSlide >= m_loopDeck->count()) {
+        m_loopSlide = 0;
+        reloadLoopDeck();   // a new round: with the newest version of the file
+    }
+    updateBeamer();
+    updateLiveBar();
+}
+
+QString MainWin::loopSignature(const QListWidgetItem *item) const {
+    // Everything that changes the slides: the entry itself and, for files, the file's state
+    QString signature = QString::fromUtf8(QJsonDocument(entryToJson(item)).toJson(QJsonDocument::Compact));
+    const auto type = MediaItem::Type(item->data(MediaItem::TypeRole).toInt());
+    if (!MediaItem::isTextType(type)) {
+        const QFileInfo file(item->data(MediaItem::SourceRole).toString());
+        signature += QStringLiteral("|%1|%2").arg(file.lastModified().toMSecsSinceEpoch()).arg(file.size());
+    } else {
+        signature += QString::fromUtf8(QJsonDocument(entryBackground(item).toJson()).toJson(QJsonDocument::Compact));
+    }
+    return signature;
+}
+
+void MainWin::reloadLoopDeck() {
+    if (!m_loopItem) {
+        return;   // entry removed: the loop keeps its last version
+    }
+    const QString signature = loopSignature(m_loopItem);
+    if (signature == m_loopSignature) {
+        return;
+    }
+    const auto type = MediaItem::Type(m_loopItem->data(MediaItem::TypeRole).toInt());
+    if (type == MediaItem::PowerPoint) {
+        const QString source = m_loopItem->data(MediaItem::SourceRole).toString();
+        if (PresentationConverter::cachedPdf(source).isEmpty()) {
+            m_converter->convert(source);   // the old version runs until the conversion is done
+            return;
+        }
+    }
+    QString error;
+    auto deck = createDeck(m_loopItem, &error, false);
+    if (!deck || deck->count() < 1) {
+        return;   // e.g. the PDF is just being written: try again after the next round
+    }
+    m_loopDeck = std::move(deck);
+    m_loopSignature = signature;
+    if (m_loopItem == ui->playlistWidget->currentItem()) {
+        showEntry(m_loopItem);   // the preview shows the new version as well
+    }
+}
+
+void MainWin::updateLiveBar() {
+    const bool live = isLooping() || isCountdownRunning();
+    m_loopBar->setVisible(live);
+    m_goLiveShortcut->setEnabled(live);
+    if (!live) {
+        return;
+    }
+    const QString countdown = m_countdownShown > 0 ? CountdownDeck::timeText(m_countdownShown)
+                                                   : m_countdownSettings.endText;
+    QString text;
+    if (isLooping()) {
+        const QString title = m_loopItem ? m_loopItem->text() : tr("Announcements");
+        text = tr("On the projector: %1 – slide %2 of %3. Clicks here only change the preview.")
+                   .arg(title).arg(m_loopSlide + 1).arg(m_loopDeck->count());
+        if (isCountdownRunning()) {
+            text += QStringLiteral("  ·  ") + tr("Countdown %1").arg(countdown);
+        }
+    } else if (isHolding()) {
+        text = tr("On the projector: Countdown %1. Clicks here only change the preview.").arg(countdown);
+    } else {
+        text = tr("Countdown %1 in the corner of the projector").arg(countdown);
+    }
+    m_loopLabel->setText(text);
+}
+
+void MainWin::goLive() {
+    if (!isLooping() && !isCountdownRunning()) {
+        return;
+    }
+    QListWidgetItem *stoppedCountdown = m_countdownItem;
+    QListWidgetItem *stoppedLoop = m_loopItem;
+    stopLoop();
+    stopCountdown();
+    m_blackAfterCountdown = false;
+    // The chosen entry starts now if it is a countdown or a loop - unless it is the one just ended
+    QListWidgetItem *item = ui->playlistWidget->currentItem();
+    if (item && item != stoppedCountdown
+        && MediaItem::Type(item->data(MediaItem::TypeRole).toInt()) == MediaItem::Countdown) {
+        startCountdown(item);
+        return;
+    }
+    if (item && item != stoppedLoop && item->data(MediaItem::AutoAdvanceRole).toInt() > 0
+        && m_deck && m_deck->count() > 1) {
+        startLoop(item, m_currentSlide);
+        return;
+    }
+    if (!m_youTubeId.isEmpty()) {
+        m_beamer->setImage(QImage());
+        m_beamer->loadYouTube(m_youTubeId);
+    } else if (!m_localVideo.isEmpty()) {
+        m_beamer->setImage(QImage());
+        m_beamer->loadVideo(m_localVideo, m_localVideoEnd);
+    } else {
+        updateBeamer();
+    }
+}
+
+// ====== Countdown ======
+
+void MainWin::startCountdown(QListWidgetItem *item) {
+    m_countdownSettings = CountdownSettings::fromJson(item->data(MediaItem::CountdownRole).toJsonObject());
+    m_countdownDeck = std::make_unique<CountdownDeck>(m_countdownSettings);
+    m_countdownDeck->setBackground(entryBackground(item));
+    m_countdownItem = item;
+    m_countdownShown = m_countdownSettings.minutes * 60;
+    m_countdownDeck->setSecondsLeft(m_countdownShown);
+    m_countdownClock.start();
+    m_countdownTimer.start(100);
+    m_blackAfterCountdown = false;
+    if (!m_countdownSettings.corner) {
+        m_beamer->unloadVideo();
+    }
+    updateBeamer();
+    updateLiveBar();
+}
+
+void MainWin::stopCountdown() {
+    m_countdownTimer.stop();
+    m_countdownDeck.reset();
+    m_countdownItem = nullptr;
+    m_countdownShown = -1;
+    updateLiveBar();
+}
+
+void MainWin::countdownTick() {
+    if (!isCountdownRunning()) {
+        return;
+    }
+    constexpr qint64 kEndShown = 3000;   // end text fully visible
+    constexpr qint64 kFade = 1500;       // then fading out to black
+    const qint64 left = qint64(m_countdownSettings.minutes) * 60000 - m_countdownClock.elapsed();
+    auto *preview = m_countdownItem && m_countdownItem == ui->playlistWidget->currentItem()
+                        ? dynamic_cast<CountdownDeck *>(m_deck.get()) : nullptr;
+
+    if (left > 0) {
+        const int seconds = int((left + 999) / 1000);
+        if (seconds == m_countdownShown) {
+            return;
+        }
+        m_countdownShown = seconds;
+        m_countdownDeck->setSecondsLeft(seconds);
+        if (preview) {
+            preview->setSecondsLeft(seconds);
+        }
+    } else if (-left < kEndShown + kFade) {
+        const qreal visibility = -left < kEndShown ? 1.0 : 1.0 - qreal(-left - kEndShown) / kFade;
+        m_countdownShown = 0;
+        m_countdownDeck->setEnding(visibility);
+        if (preview) {
+            preview->setEnding(visibility);
+        }
+    } else {
+        // Done: the projector stays black until the service starts with the next slide
+        stopCountdown();
+        stopLoop();
+        m_blackAfterCountdown = true;
+        if (preview) {
+            preview->setEnding(0.0);
+        }
+    }
+    updateBeamer();
+    updateLiveBar();
+    if (preview) {
+        updatePreview();
+    }
+}
+
+void MainWin::editAutoAdvance(QListWidgetItem *item) {
+    QDialog dlg(this);
+    dlg.setWindowTitle(tr("Advance automatically"));
+    auto *enabled = new QCheckBox(tr("Advance automatically and start again at the end"), &dlg);
+    auto *seconds = new QSpinBox(&dlg);
+    seconds->setRange(2, 300);
+    seconds->setSuffix(tr(" s"));
+    const int current = item->data(MediaItem::AutoAdvanceRole).toInt();
+    enabled->setChecked(current > 0);
+    seconds->setValue(current > 0 ? current : 8);
+    seconds->setEnabled(enabled->isChecked());
+    connect(enabled, &QCheckBox::toggled, seconds, &QWidget::setEnabled);
+    auto *hint = new QLabel(tr("For announcements: they keep running on the projector while you look at or "
+                               "edit other entries. Changes of the file are shown from the next round on."),
+                            &dlg);
+    hint->setWordWrap(true);
+    hint->setEnabled(false);   // muted
+
+    auto *row = new QHBoxLayout;
+    row->addWidget(new QLabel(tr("Every"), &dlg));
+    row->addWidget(seconds);
+    row->addStretch();
+    auto *buttons = new QDialogButtonBox(QDialogButtonBox::Ok | QDialogButtonBox::Cancel, &dlg);
+    connect(buttons, &QDialogButtonBox::accepted, &dlg, &QDialog::accept);
+    connect(buttons, &QDialogButtonBox::rejected, &dlg, &QDialog::reject);
+    auto *layout = new QVBoxLayout(&dlg);
+    layout->setContentsMargins(20, 20, 20, 16);
+    layout->setSpacing(12);
+    layout->addWidget(new QLabel(QStringLiteral("<b>%1</b>").arg(item->text().toHtmlEscaped()), &dlg));
+    layout->addWidget(enabled);
+    layout->addLayout(row);
+    layout->addWidget(hint);
+    layout->addWidget(buttons);
+    dlg.resize(460, dlg.sizeHint().height());
+    if (dlg.exec() != QDialog::Accepted) {
+        return;
+    }
+    item->setData(MediaItem::AutoAdvanceRole, enabled->isChecked() ? seconds->value() : 0);
+    if (item == m_loopItem && !enabled->isChecked()) {
+        stopLoop();
+        updateBeamer();
+    } else if (item == ui->playlistWidget->currentItem() && item != m_loopItem) {
+        showEntry(item);   // starts the loop if nothing else runs
+    }
 }
 
 // ====== Events ======

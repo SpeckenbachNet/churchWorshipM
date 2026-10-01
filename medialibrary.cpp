@@ -15,6 +15,7 @@
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
 #include "medialibrary.h"
+#include "videothumbnailer.h"
 #include "presentationconverter.h"
 
 #include <QCryptographicHash>
@@ -107,7 +108,8 @@ QString MediaLibrary::filesDir()
 bool MediaLibrary::isSupported(const QString &path)
 {
     const MediaItem::Type type = MediaItem::typeFromFile(path);
-    return type == MediaItem::Image || type == MediaItem::Pdf || type == MediaItem::PowerPoint;
+    return type == MediaItem::Image || type == MediaItem::Pdf || type == MediaItem::PowerPoint
+           || type == MediaItem::Video;
 }
 
 MediaLibrary::MediaLibrary(PresentationConverter *converter, QObject *parent)
@@ -115,6 +117,15 @@ MediaLibrary::MediaLibrary(PresentationConverter *converter, QObject *parent)
     m_converter(converter)
 {
     QDir().mkpath(filesDir());
+
+    m_videoThumbnailer = new VideoThumbnailer(this);
+    connect(m_videoThumbnailer, &VideoThumbnailer::ready, this, [this](const QString &id, const QImage &image) {
+        m_videoThumbsPending.remove(id);
+        if (!image.isNull()) {
+            image.scaled(kThumbSize, Qt::KeepAspectRatio, Qt::SmoothTransformation).save(thumbPath(id), "PNG");
+            emit thumbnailChanged(id);
+        }
+    });
 
     m_db = QSqlDatabase::addDatabase(QStringLiteral("QSQLITE"), kConnection);
     m_db.setDatabaseName(dir() + "/library.sqlite");
@@ -412,6 +423,13 @@ QImage MediaLibrary::renderThumbnail(const LibraryEntry &e)
         }
         return renderPdfPage(pdf);
     }
+    case MediaItem::Video:
+        // Takes a moment: the thumbnail is saved and announced by thumbnailChanged when ready
+        if (!m_videoThumbsPending.contains(e.id)) {
+            m_videoThumbsPending.insert(e.id);
+            m_videoThumbnailer->request(e.id, e.path());
+        }
+        return {};
     default:
         return {};
     }
