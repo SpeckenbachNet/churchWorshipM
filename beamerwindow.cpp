@@ -16,9 +16,13 @@
  */
 #include "beamerwindow.h"
 
+#include <QAudioOutput>
 #include <QGuiApplication>
+#include <QMediaPlayer>
 #include <QPainter>
 #include <QScreen>
+#include <QVideoSink>
+#include <QVideoWidget>
 #include <QWebEnginePage>
 #include <QWebEngineSettings>
 #include <QWebEngineView>
@@ -65,7 +69,7 @@ void BeamerWindow::setImage(const QImage &image)
 void BeamerWindow::setBlack(bool black)
 {
     m_black = black;
-    updateWebViewVisibility();
+    updateVideoVisibility();
     update();
 }
 
@@ -82,46 +86,136 @@ void BeamerWindow::loadYouTube(const QString &videoId)
     m_webView->settings()->setAttribute(QWebEngineSettings::PlaybackRequiresUserGesture, false);
     m_webView->setHtml(QString::fromLatin1(kYouTubeHtml).arg(videoId), kYouTubeOrigin);
     m_webView->setGeometry(rect());
-    m_videoMode = true;
-    updateWebViewVisibility();
+    m_videoMode = VideoMode::YouTube;
+    updateVideoVisibility();
+}
+
+void BeamerWindow::loadVideo(const QString &path, VideoEnd end)
+{
+    unloadVideo();
+    if (!m_player) {
+        m_player = new QMediaPlayer(this);
+        m_audio = new QAudioOutput(this);
+        m_player->setAudioOutput(m_audio);
+        m_videoWidget = new QVideoWidget(this);
+        m_videoWidget->setFocusPolicy(Qt::NoFocus);
+        m_videoWidget->setAspectRatioMode(Qt::KeepAspectRatio);
+        m_videoWidget->setAttribute(Qt::WA_TransparentForMouseEvents);
+        m_player->setVideoOutput(m_videoWidget);
+        connect(m_player, &QMediaPlayer::positionChanged, this, &BeamerWindow::videoPositionChanged);
+        connect(m_player, &QMediaPlayer::durationChanged, this, &BeamerWindow::videoDurationChanged);
+        connect(m_player, &QMediaPlayer::mediaStatusChanged, this, [this](QMediaPlayer::MediaStatus status) {
+            if (status == QMediaPlayer::EndOfMedia && m_videoMode == VideoMode::Local) {
+                videoEnded();
+            }
+        });
+        // Remembered for "keep the last frame" (a frame is only a reference, no copy)
+        connect(m_videoWidget->videoSink(), &QVideoSink::videoFrameChanged, this, [this](const QVideoFrame &frame) {
+            if (m_videoEnd == VideoEnd::LastFrame && frame.isValid()) {
+                m_lastFrame = frame;
+            }
+        });
+    }
+    m_videoEnd = end;
+    m_videoFinished = false;
+    m_lastFrame = QVideoFrame();
+    m_endImage = QImage();
+    m_player->setLoops(end == VideoEnd::Loop ? QMediaPlayer::Infinite : 1);
+    m_player->setSource(QUrl::fromLocalFile(path));
+    m_player->pause();   // shows the first frame
+    m_videoWidget->setGeometry(rect());
+    m_videoMode = VideoMode::Local;
+    updateVideoVisibility();
+}
+
+void BeamerWindow::videoEnded()
+{
+    m_videoFinished = true;
+    if (m_videoEnd == VideoEnd::LastFrame && m_lastFrame.isValid()) {
+        m_endImage = m_lastFrame.toImage();
+    }
+    updateVideoVisibility();
+    update();
 }
 
 void BeamerWindow::playVideo()
 {
-    if (m_videoMode) {
+    if (m_videoMode == VideoMode::YouTube) {
         m_webView->page()->runJavaScript("player && player.playVideo();");
+    } else if (m_videoMode == VideoMode::Local) {
+        if (m_videoFinished) {
+            m_videoFinished = false;   // again from the start
+            m_endImage = QImage();
+            m_player->setPosition(0);
+            updateVideoVisibility();
+            update();
+        }
+        m_player->play();
     }
 }
 
 void BeamerWindow::pauseVideo()
 {
-    if (m_videoMode) {
+    if (m_videoMode == VideoMode::YouTube) {
         m_webView->page()->runJavaScript("player && player.pauseVideo();");
+    } else if (m_videoMode == VideoMode::Local) {
+        m_player->pause();
     }
 }
 
 void BeamerWindow::stopVideo()
 {
-    if (m_videoMode) {
+    if (m_videoMode == VideoMode::YouTube) {
         m_webView->page()->runJavaScript("if (player) { player.pauseVideo(); player.seekTo(0, true); }");
+    } else if (m_videoMode == VideoMode::Local) {
+        m_videoFinished = false;
+        m_endImage = QImage();
+        m_player->pause();
+        m_player->setPosition(0);
+        updateVideoVisibility();
+        update();
+    }
+}
+
+void BeamerWindow::seekVideo(qint64 ms)
+{
+    if (m_videoMode == VideoMode::Local) {
+        if (m_videoFinished) {
+            m_videoFinished = false;
+            m_endImage = QImage();
+            updateVideoVisibility();
+            update();
+        }
+        m_player->setPosition(ms);
     }
 }
 
 void BeamerWindow::unloadVideo()
 {
-    if (!m_videoMode) {
+    if (m_videoMode == VideoMode::YouTube) {
+        m_webView->setHtml(QString());   // stops playback and sound
+    } else if (m_videoMode == VideoMode::Local) {
+        m_player->stop();
+        m_player->setSource(QUrl());
+        m_lastFrame = QVideoFrame();
+        m_endImage = QImage();
+        m_videoFinished = false;
+    } else {
         return;
     }
-    m_videoMode = false;
-    m_webView->setHtml(QString());   // stops playback and sound
-    updateWebViewVisibility();
+    m_videoMode = VideoMode::None;
+    updateVideoVisibility();
+    update();
 }
 
-void BeamerWindow::updateWebViewVisibility()
+void BeamerWindow::updateVideoVisibility()
 {
+    // "Black" only hides the picture, the video keeps running
     if (m_webView) {
-        // "Black" only hides the picture, the video keeps running
-        m_webView->setVisible(m_videoMode && !m_black);
+        m_webView->setVisible(m_videoMode == VideoMode::YouTube && !m_black);
+    }
+    if (m_videoWidget) {
+        m_videoWidget->setVisible(m_videoMode == VideoMode::Local && !m_black && !m_videoFinished);
     }
 }
 
@@ -130,6 +224,9 @@ void BeamerWindow::resizeEvent(QResizeEvent *event)
     QWidget::resizeEvent(event);
     if (m_webView) {
         m_webView->setGeometry(rect());
+    }
+    if (m_videoWidget) {
+        m_videoWidget->setGeometry(rect());
     }
 }
 
@@ -177,12 +274,14 @@ void BeamerWindow::paintEvent(QPaintEvent *event)
     QPainter p(this);
     p.fillRect(rect(), Qt::black);
 
-    if (m_black || m_image.isNull()) {
+    // A local video that has ended shows its last frame (or black) instead of the slide
+    const QImage &image = m_videoMode == VideoMode::Local ? m_endImage : m_image;
+    if (m_black || image.isNull()) {
         return;
     }
 
     p.setRenderHint(QPainter::SmoothPixmapTransform);
-    const QSize target = m_image.size().scaled(size(), Qt::KeepAspectRatio);
+    const QSize target = image.size().scaled(size(), Qt::KeepAspectRatio);
     const QRect r(QPoint((width() - target.width()) / 2, (height() - target.height()) / 2), target);
-    p.drawImage(r, m_image);
+    p.drawImage(r, image);
 }

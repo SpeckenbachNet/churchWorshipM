@@ -22,11 +22,13 @@
 #include <QHash>
 #include <QImage>
 #include <QList>
+#include <QSet>
 #include <QObject>
 #include <QSqlDatabase>
 #include <QString>
 
 class PresentationConverter;
+class VideoThumbnailer;
 
 // One file of the media library
 struct LibraryEntry {
@@ -86,6 +88,8 @@ private:
     QImage renderThumbnail(const LibraryEntry &e);
 
     PresentationConverter        *m_converter;
+    VideoThumbnailer             *m_videoThumbnailer = nullptr;
+    QSet<QString>                 m_videoThumbsPending;   // ids whose thumbnail is being made
     QSqlDatabase                  m_db;
     QHash<QString, LibraryEntry>  m_entries;
 };

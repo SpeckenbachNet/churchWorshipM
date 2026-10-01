@@ -15,6 +15,7 @@
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
 #include "playlistdelegate.h"
+#include "countdown.h"
 #include "textmarkup.h"
 #include "mediaitem.h"
 
@@ -81,14 +82,29 @@ void PlaylistDelegate::paint(QPainter *painter, const QStyleOptionViewItem &opti
         detail = TextMarkup::toPlain(index.data(MediaItem::TextRole).toString()).section('\n', 0, 0).trimmed();
     } else if (type == MediaItem::YouTube) {
         detail = index.data(MediaItem::SourceRole).toString();
+    } else if (type == MediaItem::Video) {
+        detail = QFileInfo(index.data(MediaItem::SourceRole).toString()).fileName();
+        const QString end = index.data(MediaItem::VideoRole).toJsonObject().value("end").toString();
+        if (end == QLatin1String("loop")) {
+            detail = tr("Loop") + QStringLiteral("  ·  ") + detail;
+        } else if (end == QLatin1String("last")) {
+            detail = tr("Keeps the last frame") + QStringLiteral("  ·  ") + detail;
+        }
+    } else if (type == MediaItem::Countdown) {
+        detail = CountdownSettings::fromJson(index.data(MediaItem::CountdownRole).toJsonObject()).summary();
     } else {
         detail = QFileInfo(index.data(MediaItem::SourceRole).toString()).fileName();
     }
     QString sub = detail.isEmpty() ? MediaItem::typeName(type)
                                    : MediaItem::typeName(type) + QStringLiteral("  ·  ") + detail;
+    const int autoAdvance = index.data(MediaItem::AutoAdvanceRole).toInt();
+    if (autoAdvance > 0) {
+        sub = tr("Loop every %1 s").arg(autoAdvance) + QStringLiteral("  ·  ") + sub;
+    }
 
     // File based entries whose file is gone (USB stick, deleted, ...) are marked before the service
-    const bool fileBased = type == MediaItem::Image || type == MediaItem::Pdf || type == MediaItem::PowerPoint;
+    const bool fileBased = type == MediaItem::Image || type == MediaItem::Pdf || type == MediaItem::PowerPoint
+                           || type == MediaItem::Video;
     if (fileBased && !QFileInfo::exists(index.data(MediaItem::SourceRole).toString())) {
         sub = tr("File missing") + QStringLiteral("  ·  ") + sub;
         subColor = QColor(220, 80, 70);

@@ -5,11 +5,14 @@
 #include <QApplication>
 #include <QSettings>
 #include <QToolButton>
+#include <QElapsedTimer>
 #include <QTimer>
 #include <memory>
 
 #include "mediaitem.h"
 #include "slidedeck.h"
+#include "beamerwindow.h"
+#include "countdown.h"
 #include "song.h"
 
 class BeamerWindow;
@@ -22,6 +25,8 @@ class EventHeader;
 class SongStore;
 class QJsonObject;
 class QShortcut;
+class QLabel;
+class QSlider;
 
 QT_BEGIN_NAMESPACE
 namespace Ui {
@@ -87,12 +92,15 @@ private:
     void addTextEntry(MediaItem::Type type);
     void addYouTube();
     void addBlank();
+    void addCountdown();
     void convertPresentations();   // queues all presentations of the playlist for conversion
     void insertEntry(QListWidgetItem *item);   // behind the current entry
     void fetchYouTubeTitle(const QString &url);
     void fetchYouTubeThumbnail(const QString &videoId);
     void editEntry(QListWidgetItem *item);
     void editEntryBackground(QListWidgetItem *item);
+    void editVideoSettings(QListWidgetItem *item);
+    void updateVideoTime(qint64 position);
     SlideBackground entryBackground(const QListWidgetItem *item) const;   // resolved, with current path
     SlideBackground defaultBackground(const QListWidgetItem *item) const; // song's, otherwise the event's
     void removeSelected();
@@ -101,12 +109,32 @@ private:
                                  const QString &source, const QString &text);
 
     // --- Slides
+    // Slides of an entry; nullptr (with 'error') if they cannot be shown (yet)
+    std::unique_ptr<SlideDeck> createDeck(QListWidgetItem *item, QString *error, bool leadingBlank) const;
     void showEntry(QListWidgetItem *item);
     void showSlide(int index);
     void nextSlide();
     void previousSlide();
     void updatePreview();
     void updateBeamer();
+
+    // --- Loop (announcements): runs on the projector on its own while the control is used for
+    // preparing. Clicks only change the preview until the loop is ended.
+    // A large countdown holds the projector the same way.
+    bool isLooping() const { return m_loopDeck != nullptr; }
+    bool isCountdownRunning() const { return m_countdownDeck != nullptr; }
+    bool isHolding() const { return isLooping() || (isCountdownRunning() && !m_countdownSettings.corner); }
+    void startCountdown(QListWidgetItem *item);
+    void stopCountdown();
+    void countdownTick();
+    void startLoop(QListWidgetItem *item, int slide);
+    void stopLoop();
+    void loopTick();
+    void reloadLoopDeck();     // after a round: takes over changed files / texts
+    QString loopSignature(const QListWidgetItem *item) const;
+    void updateLiveBar();
+    void goLive();             // ends loop and countdown, the projector shows the selected slide
+    void editAutoAdvance(QListWidgetItem *item);
 
     // --- Projector
     void setBeamerVisible(bool visible);
@@ -166,7 +194,14 @@ private:
     bool m_startAtLastSlide = false;     // set when stepping backwards into the previous entry
 
     QString m_youTubeId;                 // video of the current entry (empty if no YouTube entry)
-    QImage  m_youTubeThumb;              // preview image for the control window
+    QImage  m_videoThumb;                // preview image of a video (YouTube or local) for the control window
+    QString m_localVideo;                // file of the current local video entry (empty if none)
+    BeamerWindow::VideoEnd m_localVideoEnd = BeamerWindow::VideoEnd::Black;
+    QWidget *m_videoRow = nullptr;       // position bar and time of local videos
+    QSlider *m_videoSlider = nullptr;
+    QLabel  *m_videoTime = nullptr;
+    qint64   m_videoDuration = 0;
+    bool     m_videoSliderUpdating = false;   // position set by the player, not by the user
     QNetworkAccessManager *m_network = nullptr;
     PresentationConverter *m_converter = nullptr;
     MediaLibrary          *m_library = nullptr;
@@ -184,5 +219,22 @@ private:
     QList<QShortcut *> m_presenterShortcuts;   // only active on the presentation page
 
     QTimer m_previewTimer;               // debounces re-rendering while resizing
+
+    QListWidgetItem           *m_loopItem = nullptr;   // entry of the loop (nullptr: removed meanwhile)
+    std::unique_ptr<SlideDeck> m_loopDeck;             // own slides: the preview may show something else
+    int                        m_loopSlide = 0;
+    QString                    m_loopSignature;        // state of file / text when the deck was made
+    QTimer                     m_loopTimer;
+    QWidget                   *m_loopBar = nullptr;    // "On the projector: ..." above the preview
+    QLabel                    *m_loopLabel = nullptr;
+    QShortcut                 *m_goLiveShortcut = nullptr;
+
+    QListWidgetItem              *m_countdownItem = nullptr;   // for the live preview (nullptr: removed)
+    std::unique_ptr<CountdownDeck> m_countdownDeck;
+    CountdownSettings             m_countdownSettings;
+    QElapsedTimer                 m_countdownClock;
+    int                           m_countdownShown = -1;   // seconds currently on the projector
+    QTimer                        m_countdownTimer;
+    bool                          m_blackAfterCountdown = false;   // until the next slide is chosen
 };
 #endif // MAINWIN_H

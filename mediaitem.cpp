@@ -55,6 +55,10 @@ Type typeFromFile(const QString &path)
         return PowerPoint;
     }
 
+    if (isVideoSuffix(suffix)) {
+        return Video;
+    }
+
     const QString mime = QMimeDatabase().mimeTypeForFile(path).name();
     if (mime == QLatin1String("application/pdf")) return Pdf;
     if (mime.startsWith(QLatin1String("image/")))  return Image;
@@ -77,6 +81,8 @@ QString typeName(Type type)
     case Custom:     return QApplication::translate("MediaItem", "Own slide");
     case YouTube:    return QApplication::translate("MediaItem", "YouTube video");
     case Blank:      return QApplication::translate("MediaItem", "Blank");
+    case Countdown:  return QApplication::translate("MediaItem", "Countdown");
+    case Video:      return QApplication::translate("MediaItem", "Video");
     default:         return QApplication::translate("MediaItem", "Unknown");
     }
 }
@@ -107,6 +113,8 @@ QIcon typeIcon(Type type)
     case Custom:     path = QStringLiteral(":icons/type_custom"); break;
     case YouTube:    path = QStringLiteral(":icons/type_youtube"); break;
     case Blank:      path = QStringLiteral(":icons/black_screen"); break;   // same symbol as "Black"
+    case Countdown:  path = QStringLiteral(":icons/type_countdown"); break;
+    case Video:      path = QStringLiteral(":icons/type_video"); break;
     default:         return QApplication::style()->standardIcon(QStyle::SP_FileIcon);
     }
     return cache.insert(int(type), tintedIcon(path)).value();
@@ -123,13 +131,15 @@ QString typeKey(Type type)
     case Custom:     return "custom";
     case YouTube:    return "youtube";
     case Blank:      return "blank";
+    case Countdown:  return "countdown";
+    case Video:      return "video";
     default:         return "unknown";
     }
 }
 
 Type typeFromKey(const QString &key)
 {
-    for (Type t : {Image, Pdf, PowerPoint, Song, Bible, Custom, YouTube, Blank}) {
+    for (Type t : {Image, Pdf, PowerPoint, Song, Bible, Custom, YouTube, Blank, Countdown, Video}) {
         if (typeKey(t) == key) {
             return t;
         }
@@ -139,8 +149,9 @@ Type typeFromKey(const QString &key)
 
 QString mediaFileFilter()
 {
-    return QApplication::translate("MediaItem", "Images, PDF and presentations")
-         + " (*.png *.jpg *.jpeg *.bmp *.gif *.webp *.svg *.pdf *.ppt *.pptx *.odp);;"
+    return QApplication::translate("MediaItem", "Images, videos, PDF and presentations")
+         + " (*.png *.jpg *.jpeg *.bmp *.gif *.webp *.svg *.pdf *.ppt *.pptx *.odp"
+           " *.mp4 *.m4v *.mov *.mkv *.webm *.avi *.wmv *.mpg *.mpeg);;"
          + QApplication::translate("MediaItem", "All files") + " (*)";
 }
 
@@ -156,6 +167,12 @@ QString imageFileFilter()
     return QApplication::translate("MediaItem", "Images")
          + " (*.png *.jpg *.jpeg *.bmp *.gif *.webp *.svg);;"
          + QApplication::translate("MediaItem", "All files") + " (*)";
+}
+
+bool isVideoSuffix(const QString &suffix)
+{
+    static const QStringList suffixes{"mp4", "m4v", "mov", "mkv", "webm", "avi", "wmv", "mpg", "mpeg"};
+    return suffixes.contains(suffix.toLower());
 }
 
 QString youTubeId(const QString &url)
