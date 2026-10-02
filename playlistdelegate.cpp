@@ -109,6 +109,13 @@ void PlaylistDelegate::paint(QPainter *painter, const QStyleOptionViewItem &opti
         sub = tr("File missing") + QStringLiteral("  ·  ") + sub;
         subColor = QColor(220, 80, 70);
     }
+    // YouTube entries whose video cannot be played (checked online)
+    const int youTubeStatus = index.data(MediaItem::YouTubeStatusRole).toInt();
+    if (youTubeStatus == MediaItem::YouTubeNotFound || youTubeStatus == MediaItem::YouTubeNotEmbeddable) {
+        sub = (youTubeStatus == MediaItem::YouTubeNotFound ? tr("Video not found") : tr("Not playable here"))
+              + QStringLiteral("  ·  ") + sub;
+        subColor = QColor(220, 80, 70);
+    }
 
     painter->setFont(titleFont);
     painter->setPen(textColor);

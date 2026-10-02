@@ -95,7 +95,9 @@ private:
     void addCountdown();
     void convertPresentations();   // queues all presentations of the playlist for conversion
     void insertEntry(QListWidgetItem *item);   // behind the current entry
-    void fetchYouTubeTitle(const QString &url);
+    // Asks YouTube for title and availability (marks the entry, no message)
+    void checkYouTube(const QString &url);
+    QString youTubeProblem(int status) const;   // text for the preview / warning, empty if playable
     void fetchYouTubeThumbnail(const QString &videoId);
     void editEntry(QListWidgetItem *item);
     void editEntryBackground(QListWidgetItem *item);

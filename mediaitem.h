@@ -18,6 +18,7 @@
 
 #include <QIcon>
 #include <QString>
+#include <QUrl>
 
 // Everything that describes one entry of the playlist.
 // The entries themselves live as QListWidgetItems; type, source and text are stored in the roles below.
@@ -47,7 +48,16 @@ enum Role {
     BackgroundRole,               // QJsonObject of the own SlideBackground (text types), empty = as event
     AutoAdvanceRole,              // seconds between the slides of a loop (announcements), 0 = off
     CountdownRole,                // QJsonObject of the CountdownSettings
-    VideoRole                     // QJsonObject {"end": "black" | "last" | "loop"}
+    VideoRole,                    // QJsonObject {"end": "black" | "last" | "loop"}
+    YouTubeStatusRole             // YouTubeStatus as int, checked online (not saved)
+};
+
+// Result of asking YouTube about a video (oEmbed)
+enum YouTubeStatus {
+    YouTubeUnchecked = 0,   // not checked (yet), or no internet
+    YouTubeOk,
+    YouTubeNotFound,        // wrong link: no such video
+    YouTubeNotEmbeddable    // private, or the owner allows no playback in other programs
 };
 
 Type    typeFromFile(const QString &path);
@@ -69,5 +79,8 @@ bool isVideoSuffix(const QString &suffix);
 
 // Extracts the 11 character video id from any common YouTube URL (empty if not found)
 QString youTubeId(const QString &url);
+// Asking YouTube about a video (oEmbed, no API key needed)
+QUrl          youTubeCheckUrl(const QString &url);
+YouTubeStatus youTubeStatusFromHttp(int httpCode);   // 200 ok, 400/404 not found, 401/403 not embeddable
 
 } // namespace MediaItem
