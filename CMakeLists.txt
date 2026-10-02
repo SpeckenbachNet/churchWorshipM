@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.16)
 
-set(PROJECT_VERSION "0.79.0")
+set(PROJECT_VERSION "0.80.0")
 set(ORGANIZATION_NAME "SpeckenbachNet")
 set(ORGANIZATION_DOMAIN "net.speckenbach")
 
@@ -17,8 +17,8 @@ set(CMAKE_AUTORCC ON)
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
-find_package(QT NAMES Qt6 Qt5 REQUIRED COMPONENTS Widgets Pdf Network WebEngineWidgets Multimedia MultimediaWidgets Sql LinguistTools)
-find_package(Qt${QT_VERSION_MAJOR} REQUIRED COMPONENTS Widgets Pdf Network WebEngineWidgets Multimedia MultimediaWidgets Sql LinguistTools)
+find_package(QT NAMES Qt6 Qt5 REQUIRED COMPONENTS Widgets Pdf Network WebEngineWidgets Multimedia MultimediaWidgets PrintSupport Sql LinguistTools)
+find_package(Qt${QT_VERSION_MAJOR} REQUIRED COMPONENTS Widgets Pdf Network WebEngineWidgets Multimedia MultimediaWidgets PrintSupport Sql LinguistTools)
 # QZipReader (SWORD import) is private Qt API
 find_package(Qt${QT_VERSION_MAJOR} REQUIRED COMPONENTS CorePrivate)
 
@@ -112,6 +112,8 @@ if(${QT_VERSION_MAJOR} GREATER_EQUAL 6)
         youtubedialog.cpp
         statisticspage.h
         statisticspage.cpp
+        printplan.h
+        printplan.cpp
         searchfield.h
         searchfield.cpp
         data.qrc
@@ -162,6 +164,7 @@ target_link_libraries(${PROJECT_NAME} PRIVATE Qt${QT_VERSION_MAJOR}::Widgets
     Qt${QT_VERSION_MAJOR}::WebEngineWidgets
     Qt${QT_VERSION_MAJOR}::Multimedia
     Qt${QT_VERSION_MAJOR}::MultimediaWidgets
+    Qt${QT_VERSION_MAJOR}::PrintSupport
     Qt${QT_VERSION_MAJOR}::Sql
     Qt${QT_VERSION_MAJOR}::CorePrivate
 )

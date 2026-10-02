@@ -35,5 +35,6 @@
         <file alias="type_countdown">ressources/icons/type_countdown.svg</file>
         <file alias="type_video">ressources/icons/type_video.svg</file>
         <file alias="statistics">ressources/icons/statistics.svg</file>
+        <file alias="print">ressources/icons/print.svg</file>
     </qresource>
 </RCC>

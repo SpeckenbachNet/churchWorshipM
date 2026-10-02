@@ -19,6 +19,7 @@
 #include "youtubedialog.h"
 #include "textmarkup.h"
 #include "statisticspage.h"
+#include "printplan.h"
 
 #include <QCheckBox>
 #include <QCloseEvent>
@@ -79,6 +80,8 @@ void MainWin::initializeForm() {
     m_newBtn->setToolTip(tr("New event (Ctrl+N)"));
     m_openBtn = ui->presenterToolbar->addButton("openBtn", tr("Events"), ":icons/calendar", true);
     m_openBtn->setToolTip(tr("Open or manage events and templates (Ctrl+O)"));
+    m_printBtn = ui->presenterToolbar->addButton("printBtn", "", ":icons/print");
+    m_printBtn->setToolTip(tr("Plan of this event, e.g. for the band (also as PDF) (Ctrl+P)"));
 
     ui->presenterToolbar->addSpacer();
 
@@ -158,6 +161,8 @@ void MainWin::initializeForm() {
     m_eventsExportBtn->setToolTip(tr("Save the selected event as a file, e.g. for another computer"));
     m_eventsStatsBtn  = ui->eventsToolbar->addButton("eventsStatsBtn", tr("Statistics"), ":icons/statistics", true);
     m_eventsStatsBtn->setToolTip(tr("Song statistics and the list for the CCLI report"));
+    m_eventsPrintBtn  = ui->eventsToolbar->addButton("eventsPrintBtn", tr("Print"), ":icons/print", true);
+    m_eventsPrintBtn->setToolTip(tr("Plan of the selected event, e.g. for the band (also as PDF)"));
     ui->eventsToolbar->addSpacer();
 
     // --- Statistics page: built here, like the other pages but without an entry in the .ui
@@ -318,6 +323,8 @@ void MainWin::initializeConnections() {
     connect(m_eventsImportBtn, &QToolButton::clicked, ui->eventsBrowser, &EventsPage::importFiles);
     connect(m_eventsExportBtn, &QToolButton::clicked, ui->eventsBrowser, &EventsPage::exportSelected);
     connect(m_eventsStatsBtn,  &QToolButton::clicked, this, [this] { openStatistics(false); });
+    connect(m_eventsPrintBtn,  &QToolButton::clicked, this, [this] { printEvent(ui->eventsBrowser->selectedId()); });
+    connect(m_printBtn,        &QToolButton::clicked, this, [this] { printEvent(m_eventId); });
     connect(m_songsStatsBtn,   &QToolButton::clicked, this, [this] { openStatistics(true); });
     connect(m_eventsOpenBtn,   &QToolButton::clicked, this, [this] {
         const QString id = ui->eventsBrowser->selectedId();
@@ -485,6 +492,7 @@ void MainWin::initializeShortcuts() {
     presenterShortcut(QKeySequence::Open, this, &MainWin::openEventsPage);
     presenterShortcut(QKeySequence::New,  this, [this] { ui->eventsBrowser->newEvent(); });
     presenterShortcut(QKeySequence::Delete, ui->playlistWidget, &MainWin::removeSelected);
+    presenterShortcut(QKeySequence::Print, this, [this] { printEvent(m_eventId); });
 
     // Ends a running loop: the projector shows the selected slide (only active during a loop)
     m_goLiveShortcut = new QShortcut(Qt::Key_Return, ui->presenterPage);
@@ -1155,6 +1163,7 @@ void MainWin::updateButtonStates() {
     m_blackBtn->setEnabled(m_beamerBtn->isChecked());
 
     m_addBtn->setEnabled(!m_eventId.isEmpty());   // entries always belong to an event
+    m_printBtn->setEnabled(!m_eventId.isEmpty());
     m_editBtn->setEnabled(hasEntry);
     m_removeBtn->setEnabled(hasEntry);
     m_upBtn->setEnabled(row > 0);
@@ -1176,6 +1185,7 @@ void MainWin::updateButtonStates() {
     m_eventsEditBtn->setEnabled(eventSelection);
     m_eventsRemoveBtn->setEnabled(eventSelection);
     m_eventsExportBtn->setEnabled(eventSelection);
+    m_eventsPrintBtn->setEnabled(eventSelection);
     m_eventsOpenBtn->setEnabled(eventSelection);
 }
 
@@ -1416,6 +1426,17 @@ QString MainWin::songCredits(const QListWidgetItem *item) const {
         }
     }
     return lines.join('\n');
+}
+
+// ====== Printing ======
+
+void MainWin::printEvent(const QString &id) {
+    const EventInfo event = m_events->event(id);
+    if (!event.isValid()) {
+        return;
+    }
+    saveEvent();   // the open event with its latest changes
+    PrintPlan::print(this, event, m_events->items(id), m_songs);
 }
 
 // ====== Statistics page ======
