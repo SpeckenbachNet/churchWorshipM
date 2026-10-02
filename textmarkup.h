@@ -32,6 +32,7 @@ class QTextCharFormat;
 namespace TextMarkup {
 
 QString toPlain(const QString &markup);   // without formatting, e.g. for search and titles
+QString fromPlain(const QString &text);   // exactly this text, unformatted ("<b>" stays visible)
 
 // Replaces the content of 'doc' by the text; every line becomes a block.
 // 'base' is the format of unformatted text (font, color).

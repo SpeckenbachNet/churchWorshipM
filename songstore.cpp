@@ -236,7 +236,8 @@ QString SongStore::importSongSelect(const QString &path, QString *licence, QStri
         return {};
     }
     Song imported = Song::fromSongSelectText(QString::fromUtf8(file.readAll()), licence);
-    if (imported.title.isEmpty() || imported.parts.isEmpty()) {
+    // SongSelect files always carry the CCLI song number: other text files are no songs
+    if (imported.title.isEmpty() || imported.parts.isEmpty() || imported.ccliNumber.isEmpty()) {
         *error = tr("%1 is not a SongSelect lyrics file.").arg(QFileInfo(path).fileName());
         return {};
     }

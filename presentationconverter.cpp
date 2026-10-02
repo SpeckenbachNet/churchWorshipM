@@ -182,19 +182,51 @@ try {
 // ---------------------------------------------------------------------------
 
 #ifdef Q_OS_MACOS
-Outcome runAppleScript(const Job &job, const QString &script, const QString &produced, QString *message)
+// PowerPoint and Keynote are sandboxed: they ask the user for access to every folder they
+// did not open themselves. A fixed folder (instead of a new temp dir every time) means they
+// ask only once and remember the permission.
+QString sandboxedWorkDir()
 {
-    const QString scriptPath = job.workDir + "/convert.applescript";
+    return QStandardPaths::writableLocation(QStandardPaths::CacheLocation) + "/conversion";
+}
+
+// Only the files: the folder itself stays, the permission belongs to it
+void emptyFolder(const QString &dir)
+{
+    for (const QString &file : QDir(dir).entryList(QDir::Files | QDir::Hidden)) {
+        QFile::remove(dir + "/" + file);
+    }
+}
+
+Outcome runAppleScript(const Job &job, const QString &script, const QString &pdfName, QString *message)
+{
+    // NOTE: On first use macOS asks the user to allow ChurchWorshipM to control the app,
+    // and the app asks once for access to the work folder.
+    const QString scriptPath = job.workDir + "/convert.applescript";   // read by osascript only
     if (!writeTextFile(scriptPath, script)) {
         *message = QCoreApplication::translate("PresentationConverter", "cannot write helper script");
         return Outcome::Failed;
     }
-    // NOTE: On first use macOS asks the user to allow ChurchWorshipM to control the app.
-    // Both apps are sandboxed; if they refuse to write into our temp dir, the target
-    // folder has to be moved into the app's container. -> verify on a real Mac.
+    // The presentation goes into the work folder as well: files elsewhere (USB stick,
+    // our library) would cause another question
+    const QString workDir = sandboxedWorkDir();
+    emptyFolder(workDir);   // leftovers of a cancelled conversion
+    if (!QDir().mkpath(workDir)) {
+        *message = QCoreApplication::translate("PresentationConverter", "cannot create the work folder");
+        return Outcome::Failed;
+    }
+    const QString input = workDir + "/presentation." + QFileInfo(job.source).suffix().toLower();
+    if (!QFile::copy(job.source, input)) {
+        *message = QCoreApplication::translate("PresentationConverter", "cannot copy the presentation");
+        return Outcome::Failed;
+    }
+    const QString produced = workDir + "/" + pdfName;
+
     QString log;
-    const bool ran = runProcess(job, "/usr/bin/osascript", {scriptPath, job.source, produced}, &log);
-    return takeResult(job, produced, log, ran, message);
+    const bool ran = runProcess(job, "/usr/bin/osascript", {scriptPath, input, produced}, &log);
+    const Outcome outcome = takeResult(job, produced, log, ran, message);
+    emptyFolder(workDir);
+    return outcome;
 }
 
 Outcome convertWithPowerPointMac(const Job &job, QString *message)
@@ -216,7 +248,7 @@ on run argv
     end tell
 end run
 )AS");
-    return runAppleScript(job, script, job.workDir + "/powerpoint.pdf", message);
+    return runAppleScript(job, script, "powerpoint.pdf", message);
 }
 
 Outcome convertWithKeynote(const Job &job, QString *message)
@@ -237,7 +269,7 @@ on run argv
     end tell
 end run
 )AS");
-    return runAppleScript(job, script, job.workDir + "/keynote.pdf", message);
+    return runAppleScript(job, script, "keynote.pdf", message);
 }
 #endif
 
