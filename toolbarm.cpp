@@ -150,10 +150,19 @@ void ToolbarM::changeEvent(QEvent *event)
 
 bool ToolbarM::eventFilter(QObject *obj, QEvent *event)
 {
-    if (event->type() == QEvent::Paint) {
-        if (QToolButton *btn = qobject_cast<QToolButton*>(obj)) {
+    if (QToolButton *btn = qobject_cast<QToolButton*>(obj)) {
+        switch (event->type()) {
+        case QEvent::Paint:
             paintButton(btn);
             return true;
+        case QEvent::Enter:
+        case QEvent::Leave:
+            // QToolButton repaints on hover only in autoRaise mode: without this the hover
+            // never shows, or stays visible after the mouse has left (e.g. after a click)
+            btn->update();
+            break;
+        default:
+            break;
         }
     }
     return QFrame::eventFilter(obj, event);
