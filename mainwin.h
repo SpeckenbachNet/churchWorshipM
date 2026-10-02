@@ -88,6 +88,7 @@ private:
 
     // --- Statistics page (from the events or the song library; "Back" returns there)
     void openStatistics(bool fromSongs);
+    void printEvent(const QString &id);   // plan of the event (options, then print dialog)
 
     // --- Media library page
     void openLibraryPage(bool pick);   // pick = choose entries for the playlist
@@ -158,6 +159,7 @@ private:
 
     QToolButton *m_newBtn = nullptr;
     QToolButton *m_openBtn = nullptr;
+    QToolButton *m_printBtn = nullptr;
     QToolButton *m_beamerBtn = nullptr;
     QToolButton *m_blackBtn = nullptr;
     QToolButton *m_settingsBtn = nullptr;
@@ -199,6 +201,7 @@ private:
     QToolButton *m_eventsExportBtn = nullptr;
     QToolButton *m_eventsOpenBtn = nullptr;
     QToolButton *m_eventsStatsBtn = nullptr;
+    QToolButton *m_eventsPrintBtn = nullptr;
     QToolButton *m_songsStatsBtn = nullptr;
 
     QFrame         *m_dropIndicator = nullptr;    // line where dropped files will be inserted
