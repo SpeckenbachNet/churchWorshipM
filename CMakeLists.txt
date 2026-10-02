@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.16)
 
-set(PROJECT_VERSION "0.78.0")
+set(PROJECT_VERSION "0.79.0")
 set(ORGANIZATION_NAME "SpeckenbachNet")
 set(ORGANIZATION_DOMAIN "net.speckenbach")
 
@@ -110,6 +110,8 @@ if(${QT_VERSION_MAJOR} GREATER_EQUAL 6)
         videothumbnailer.cpp
         youtubedialog.h
         youtubedialog.cpp
+        statisticspage.h
+        statisticspage.cpp
         searchfield.h
         searchfield.cpp
         data.qrc

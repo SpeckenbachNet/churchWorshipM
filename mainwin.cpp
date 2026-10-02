@@ -17,6 +17,8 @@
 #include "songeditor.h"
 #include "backgroundpicker.h"
 #include "youtubedialog.h"
+#include "textmarkup.h"
+#include "statisticspage.h"
 
 #include <QCheckBox>
 #include <QCloseEvent>
@@ -30,6 +32,8 @@
 #include <QJsonDocument>
 #include <QJsonObject>
 #include <QLabel>
+#include <QMimeData>
+#include <QDropEvent>
 #include <QMenu>
 #include <QMessageBox>
 #include <QNetworkAccessManager>
@@ -135,6 +139,8 @@ void MainWin::initializeForm() {
     m_songsImportBtn = ui->songsToolbar->addButton("songsImportBtn", tr("Import"), ":icons/download", true);
     m_songsImportBtn->setToolTip(tr("Import lyrics files downloaded from SongSelect (*.txt)"));
     m_songsRemoveBtn = ui->songsToolbar->addButton("songsRemoveBtn", tr("Delete"), ":icons/remove", true);
+    m_songsStatsBtn  = ui->songsToolbar->addButton("songsStatsBtn", tr("Statistics"), ":icons/statistics", true);
+    m_songsStatsBtn->setToolTip(tr("Which songs were sung how often, and which not for a long time"));
     ui->songsToolbar->addSpacer();
     m_songsApplyBtn  = ui->songsToolbar->addButton("songsApplyBtn", tr("Apply"), ":icons/check", true);
     m_songsApplyBtn->setToolTip(tr("Put the selected songs into the playlist"));
@@ -150,7 +156,32 @@ void MainWin::initializeForm() {
     m_eventsImportBtn->setToolTip(tr("Import events from files (*.cwm)"));
     m_eventsExportBtn = ui->eventsToolbar->addButton("eventsExportBtn", tr("Export"), ":icons/upload", true);
     m_eventsExportBtn->setToolTip(tr("Save the selected event as a file, e.g. for another computer"));
+    m_eventsStatsBtn  = ui->eventsToolbar->addButton("eventsStatsBtn", tr("Statistics"), ":icons/statistics", true);
+    m_eventsStatsBtn->setToolTip(tr("Song statistics and the list for the CCLI report"));
     ui->eventsToolbar->addSpacer();
+
+    // --- Statistics page: built here, like the other pages but without an entry in the .ui
+    m_statsPage = new QWidget(ui->mainStack);
+    auto *statsToolbar = new ToolbarM(m_statsPage);
+    statsToolbar->setMinimumHeight(40);
+    statsToolbar->setSizePolicy(QSizePolicy::Preferred, QSizePolicy::Maximum);
+    QToolButton *statsBackBtn = statsToolbar->addButton("statsBackBtn", tr("Back"), ":icons/back", true);
+    statsToolbar->addSpacer();
+    QToolButton *statsCopyBtn = statsToolbar->addButton("statsCopyBtn", tr("Copy"), "", false);
+    statsCopyBtn->setToolTip(tr("Copies the list, e.g. into a spreadsheet"));
+    QToolButton *statsCsvBtn = statsToolbar->addButton("statsCsvBtn", tr("Save as CSV"), ":icons/save", true);
+    m_statsBrowser = new StatisticsPage(m_statsPage);
+    m_statsBrowser->setStores(m_events, m_songs);
+    auto *statsLayout = new QVBoxLayout(m_statsPage);
+    statsLayout->setContentsMargins(0, 0, 0, 0);
+    statsLayout->addWidget(statsToolbar);
+    statsLayout->addWidget(m_statsBrowser, 1);
+    ui->mainStack->addWidget(m_statsPage);
+    connect(statsBackBtn, &QToolButton::clicked, this, [this] {
+        showPage(m_statsReturnPage ? m_statsReturnPage : ui->presenterPage);
+    });
+    connect(statsCopyBtn, &QToolButton::clicked, m_statsBrowser, &StatisticsPage::copyToClipboard);
+    connect(statsCsvBtn, &QToolButton::clicked, m_statsBrowser, &StatisticsPage::saveCsv);
     m_eventsOpenBtn   = ui->eventsToolbar->addButton("eventsOpenBtn", tr("Open"), ":icons/check", true);
     m_eventsOpenBtn->setToolTip(tr("Open the selected event in the presentation"));
 
@@ -208,6 +239,11 @@ void MainWin::initializeForm() {
     ui->playlistWidget->setDragDropMode(QAbstractItemView::InternalMove);
     ui->playlistWidget->setDefaultDropAction(Qt::MoveAction);
     ui->playlistWidget->setEditTriggers(QAbstractItemView::EditKeyPressed);  // F2 renames
+    // Files from the Finder and links from a browser can be dropped onto the list
+    ui->playlistWidget->viewport()->installEventFilter(this);
+    m_dropIndicator = new QFrame(ui->playlistWidget->viewport());
+    m_dropIndicator->setStyleSheet(QStringLiteral("background: palette(highlight); border-radius: 1px;"));
+    m_dropIndicator->hide();
 
     // --- Slide thumbnails
     QListWidget *slides = ui->slidesListWidget;
@@ -281,6 +317,8 @@ void MainWin::initializeConnections() {
     connect(m_eventsRemoveBtn, &QToolButton::clicked, ui->eventsBrowser, &EventsPage::removeSelected);
     connect(m_eventsImportBtn, &QToolButton::clicked, ui->eventsBrowser, &EventsPage::importFiles);
     connect(m_eventsExportBtn, &QToolButton::clicked, ui->eventsBrowser, &EventsPage::exportSelected);
+    connect(m_eventsStatsBtn,  &QToolButton::clicked, this, [this] { openStatistics(false); });
+    connect(m_songsStatsBtn,   &QToolButton::clicked, this, [this] { openStatistics(true); });
     connect(m_eventsOpenBtn,   &QToolButton::clicked, this, [this] {
         const QString id = ui->eventsBrowser->selectedId();
         if (!id.isEmpty()) {
@@ -489,8 +527,140 @@ QListWidgetItem *MainWin::createEntry(const QString &title, MediaItem::Type type
 
 void MainWin::insertEntry(QListWidgetItem *item) {
     const int row = ui->playlistWidget->currentRow();
-    ui->playlistWidget->insertItem(row < 0 ? ui->playlistWidget->count() : row + 1, item);
+    insertEntryAt(item, row < 0 ? ui->playlistWidget->count() : row + 1);
+}
+
+void MainWin::insertEntryAt(QListWidgetItem *item, int row) {
+    ui->playlistWidget->insertItem(qBound(0, row, ui->playlistWidget->count()), item);
     ui->playlistWidget->setCurrentItem(item);
+}
+
+QListWidgetItem *MainWin::createSongEntry(const QString &songId) {
+    const Song song = m_songs->song(songId);
+    if (!song.isValid()) {
+        return nullptr;
+    }
+    // The text is a copy: the event stays complete even if the song is changed or deleted.
+    // The reference allows own orders per event later on.
+    QListWidgetItem *item = createEntry(song.title, MediaItem::Song, {}, QString());
+    // Credits are kept with the entry as well: needed on the slides even without the library
+    item->setData(MediaItem::SongRole, QJsonObject{{"id", song.id}, {"authors", song.authors},
+                                                   {"copyright", song.copyright},
+                                                   {"ccli", song.ccliNumber}});
+    refreshSongEntry(item);   // lyrics, parts in other languages
+    return item;
+}
+
+// ====== Dropping onto the playlist ======
+
+bool MainWin::canDrop(const QMimeData *mime) const {
+    if (m_eventId.isEmpty() || !mime) {
+        return false;   // entries always belong to an event
+    }
+    for (const QUrl &url : mime->urls()) {
+        if (url.isLocalFile() || !MediaItem::youTubeId(url.toString()).isEmpty()) {
+            return true;
+        }
+    }
+    return mime->hasText() && !MediaItem::youTubeId(mime->text().trimmed()).isEmpty();
+}
+
+int MainWin::dropRow(const QPoint &viewportPos) const {
+    // Above or below the entry under the mouse; on the empty area: at the end
+    const QModelIndex index = ui->playlistWidget->indexAt(viewportPos);
+    if (!index.isValid()) {
+        return ui->playlistWidget->count();
+    }
+    const QRect r = ui->playlistWidget->visualRect(index);
+    return viewportPos.y() < r.center().y() ? index.row() : index.row() + 1;
+}
+
+void MainWin::dropOnPlaylist(const QList<QUrl> &urls, const QString &text, int row) {
+    QList<QUrl> links = urls;
+    if (links.isEmpty() && !text.isEmpty()) {
+        links << QUrl(text.trimmed());   // a link dragged as plain text
+    }
+    const bool link = settings.value("library/linkByDefault", false).toBool();
+    QStringList errors;
+    QListWidgetItem *last = nullptr;
+
+    QApplication::setOverrideCursor(Qt::WaitCursor);
+    for (const QUrl &url : std::as_const(links)) {
+        QListWidgetItem *item = nullptr;
+        if (url.isLocalFile()) {
+            const QString path = url.toLocalFile();
+            if (QFileInfo(path).suffix().compare(QLatin1String("txt"), Qt::CaseInsensitive) == 0) {
+                QFile file(path);
+                const QString text = file.open(QIODevice::ReadOnly) ? QString::fromUtf8(file.readAll()) : QString();
+                if (Song::fromSongSelectText(text).ccliNumber.isEmpty()) {
+                    // An ordinary text file: becomes an own slide, checked in the dialog first
+                    QApplication::restoreOverrideCursor();
+                    TextSlideDialog dlg(MediaItem::Custom, this);
+                    dlg.setTitle(QFileInfo(path).completeBaseName());
+                    dlg.setText(TextMarkup::fromPlain(text.trimmed()));
+                    const bool accepted = dlg.exec() == QDialog::Accepted;
+                    QApplication::setOverrideCursor(Qt::WaitCursor);
+                    if (accepted) {
+                        item = createEntry(dlg.title(), MediaItem::Custom, {}, dlg.text());
+                        ui->playlistWidget->insertItem(qBound(0, row, ui->playlistWidget->count()), item);
+                        ++row;
+                        last = item;
+                    }
+                    continue;
+                }
+                // SongSelect lyrics: into the song library and into the playlist
+                QString licence, error;
+                const QString id = m_songs->importSongSelect(path, &licence, &error);
+                if (id.isEmpty()) {
+                    errors << error;
+                    continue;
+                }
+                if (!licence.isEmpty() && settings.value("ccli/licence").toString().isEmpty()) {
+                    settings.setValue("ccli/licence", licence);
+                }
+                item = createSongEntry(id);
+            } else if (MediaLibrary::isSupported(path)) {
+                QString error;
+                const QString id = m_library->addFile(path, link, &error);
+                if (id.isEmpty()) {
+                    errors << error;
+                    continue;
+                }
+                item = createLibraryEntry(id);
+            } else {
+                errors << tr("%1 cannot be used here.").arg(QFileInfo(path).fileName());
+                continue;
+            }
+        } else if (!MediaItem::youTubeId(url.toString()).isEmpty()) {
+            // The dialog shows title and preview; it may be cancelled
+            QApplication::restoreOverrideCursor();
+            YouTubeDialog dlg(m_network, url.toString(), this);
+            const bool accepted = dlg.exec() == QDialog::Accepted;
+            QApplication::setOverrideCursor(Qt::WaitCursor);
+            if (!accepted) {
+                continue;
+            }
+            item = createEntry(dlg.title().isEmpty() ? tr("YouTube video") : dlg.title(),
+                               MediaItem::YouTube, dlg.url(), {});
+            item->setData(MediaItem::YouTubeStatusRole, int(dlg.status()));
+            if (dlg.status() == MediaItem::YouTubeUnchecked) {
+                checkYouTube(dlg.url());
+            }
+        }
+        if (item) {
+            ui->playlistWidget->insertItem(qBound(0, row, ui->playlistWidget->count()), item);
+            ++row;   // several files keep their order
+            last = item;
+        }
+    }
+    QApplication::restoreOverrideCursor();
+    if (last) {
+        ui->playlistWidget->setCurrentItem(last);
+    }
+    convertPresentations();
+    if (!errors.isEmpty()) {
+        QMessageBox::warning(this, tr("Add files"), errors.join('\n'));
+    }
 }
 
 void MainWin::addFiles() {
@@ -1040,15 +1210,7 @@ void MainWin::applySongSelection() {
         if (!song.isValid()) {
             continue;
         }
-        // The text is a copy: the event stays complete even if the song is changed or deleted.
-        // The reference allows own orders per event later on.
-        QListWidgetItem *item = createEntry(song.title, MediaItem::Song, {}, QString());
-        // Credits are kept with the entry as well: needed on the slides even without the library
-        item->setData(MediaItem::SongRole, QJsonObject{{"id", song.id}, {"authors", song.authors},
-                                                       {"copyright", song.copyright},
-                                                       {"ccli", song.ccliNumber}});
-        refreshSongEntry(item);   // lyrics, parts in other languages
-        insertEntry(item);
+        insertEntry(createSongEntry(id));
     }
 }
 
@@ -1254,6 +1416,18 @@ QString MainWin::songCredits(const QListWidgetItem *item) const {
         }
     }
     return lines.join('\n');
+}
+
+// ====== Statistics page ======
+
+void MainWin::openStatistics(bool fromSongs) {
+    saveEvent();   // the open event counts with its latest state
+    m_statsReturnPage = fromSongs ? ui->songsPage : ui->eventsPage;
+    if (fromSongs) {
+        m_statsBrowser->setView(StatisticsPage::AllSongs);
+    }
+    m_statsBrowser->refresh();
+    showPage(m_statsPage);
 }
 
 // ====== Media library page ======
@@ -1903,6 +2077,50 @@ void MainWin::editAutoAdvance(QListWidgetItem *item) {
 // ====== Events ======
 
 bool MainWin::eventFilter(QObject *obj, QEvent *event) {
+    // Files and links from outside; moving entries within the list stays with the list itself
+    if (obj == ui->playlistWidget->viewport()) {
+        switch (event->type()) {
+        case QEvent::DragEnter:
+        case QEvent::DragMove: {
+            auto *drag = static_cast<QDropEvent *>(event);
+            if (drag->source() == ui->playlistWidget || !canDrop(drag->mimeData())) {
+                break;
+            }
+            drag->acceptProposedAction();
+            // Line between the entries where the drop lands
+            const int row = dropRow(drag->position().toPoint());
+            int y = 0;
+            if (row < ui->playlistWidget->count()) {
+                y = ui->playlistWidget->visualItemRect(ui->playlistWidget->item(row)).top();
+            } else if (row > 0) {
+                y = ui->playlistWidget->visualItemRect(ui->playlistWidget->item(row - 1)).bottom();
+            }
+            m_dropIndicator->setGeometry(4, qMax(0, y - 1), ui->playlistWidget->viewport()->width() - 8, 3);
+            m_dropIndicator->show();
+            m_dropIndicator->raise();
+            return true;
+        }
+        case QEvent::DragLeave:
+            m_dropIndicator->hide();
+            break;
+        case QEvent::Drop: {
+            auto *drop = static_cast<QDropEvent *>(event);
+            m_dropIndicator->hide();
+            if (drop->source() == ui->playlistWidget || !canDrop(drop->mimeData())) {
+                break;
+            }
+            drop->acceptProposedAction();
+            const QList<QUrl> urls = drop->mimeData()->urls();
+            const QString text = drop->mimeData()->hasUrls() ? QString() : drop->mimeData()->text();
+            const int row = dropRow(drop->position().toPoint());
+            // After the drag has finished: a dialog during the drop confuses macOS
+            QTimer::singleShot(0, this, [this, urls, text, row] { dropOnPlaylist(urls, text, row); });
+            return true;
+        }
+        default:
+            break;
+        }
+    }
     if (obj == ui->previewLabel && event->type() == QEvent::Resize) {
         m_previewTimer.start();
     }

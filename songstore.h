@@ -49,8 +49,8 @@ public:
     // Links the song with exactly these songs (empty: removes the song from its links)
     bool        setTranslations(const QString &id, const QStringList &linkedIds);
 
-    // SongSelect lyrics file. A song with the same CCLI number is replaced (its own
-    // order is kept if the parts still exist), otherwise the song is added.
+    // SongSelect lyrics file (recognized by its CCLI song number). A song with the same CCLI
+    // number is replaced (its own order is kept if the parts still exist), otherwise added.
     // 'licence' receives the church licence number from the file footer.
     QString importSongSelect(const QString &path, QString *licence, QString *error);
 

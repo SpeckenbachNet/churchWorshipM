@@ -27,6 +27,10 @@ class QJsonObject;
 class QShortcut;
 class QLabel;
 class QSlider;
+class QMimeData;
+class QFrame;
+class StatisticsPage;
+class ToolbarM;
 
 QT_BEGIN_NAMESPACE
 namespace Ui {
@@ -82,6 +86,9 @@ private:
     QStringList songTranslationSlides(const QListWidgetItem *item) const;   // empty: no translation
     void editSongEntry(QListWidgetItem *item);
 
+    // --- Statistics page (from the events or the song library; "Back" returns there)
+    void openStatistics(bool fromSongs);
+
     // --- Media library page
     void openLibraryPage(bool pick);   // pick = choose entries for the playlist
     void applyLibrarySelection();
@@ -95,6 +102,13 @@ private:
     void addCountdown();
     void convertPresentations();   // queues all presentations of the playlist for conversion
     void insertEntry(QListWidgetItem *item);   // behind the current entry
+    void insertEntryAt(QListWidgetItem *item, int row);
+    QListWidgetItem *createSongEntry(const QString &songId);   // nullptr if not in the library
+
+    // --- Dropping files and links onto the playlist (from the Finder or a browser)
+    bool canDrop(const QMimeData *mime) const;
+    int  dropRow(const QPoint &viewportPos) const;   // insert position for the drop indicator
+    void dropOnPlaylist(const QList<QUrl> &urls, const QString &text, int row);
     // Asks YouTube for title and availability (marks the entry, no message)
     void checkYouTube(const QString &url);
     QString youTubeProblem(int status) const;   // text for the preview / warning, empty if playable
@@ -184,6 +198,14 @@ private:
     QToolButton *m_eventsImportBtn = nullptr;
     QToolButton *m_eventsExportBtn = nullptr;
     QToolButton *m_eventsOpenBtn = nullptr;
+    QToolButton *m_eventsStatsBtn = nullptr;
+    QToolButton *m_songsStatsBtn = nullptr;
+
+    QFrame         *m_dropIndicator = nullptr;    // line where dropped files will be inserted
+
+    QWidget        *m_statsPage = nullptr;        // statistics: toolbar + StatisticsPage
+    StatisticsPage *m_statsBrowser = nullptr;
+    QWidget        *m_statsReturnPage = nullptr;  // where "Back" goes
 
     QToolButton *m_playBtn = nullptr;
     QToolButton *m_pauseBtn = nullptr;

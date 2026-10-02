@@ -146,6 +146,15 @@ QString toPlain(const QString &markup)
     return lines.join(QLatin1Char('\n'));
 }
 
+QString fromPlain(const QString &text)
+{
+    QStringList lines;
+    for (const QString &line : text.split(QLatin1Char('\n'))) {
+        lines << escaped(line);
+    }
+    return lines.join(QLatin1Char('\n'));
+}
+
 void fillDocument(QTextDocument *doc, const QString &markup, const QTextCharFormat &base)
 {
     doc->clear();
