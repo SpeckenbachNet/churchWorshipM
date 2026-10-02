@@ -16,6 +16,7 @@
 #include "songstore.h"
 #include "songeditor.h"
 #include "backgroundpicker.h"
+#include "youtubedialog.h"
 
 #include <QCheckBox>
 #include <QCloseEvent>
@@ -24,7 +25,6 @@
 #include <QFileInfo>
 #include <QFrame>
 #include <QHBoxLayout>
-#include <QInputDialog>
 #include <QJsonArray>
 #include <algorithm>
 #include <QJsonDocument>
@@ -36,7 +36,6 @@
 #include <QNetworkReply>
 #include <QPushButton>
 #include <QRadioButton>
-#include <QUrlQuery>
 #include <QShortcut>
 #include <QSlider>
 #include <QSpinBox>
@@ -532,19 +531,17 @@ void MainWin::addTextEntry(MediaItem::Type type) {
 }
 
 void MainWin::addYouTube() {
-    bool ok = false;
-    const QString url = QInputDialog::getText(this, tr("YouTube video"),
-                                              tr("Link of the YouTube video:"),
-                                              QLineEdit::Normal, QString(), &ok).trimmed();
-    if (!ok || url.isEmpty()) {
+    YouTubeDialog dlg(m_network, QString(), this);
+    if (dlg.exec() != QDialog::Accepted) {
         return;
     }
-    if (MediaItem::youTubeId(url).isEmpty()) {
-        QMessageBox::warning(this, tr("YouTube video"), tr("This is not a valid YouTube link."));
-        return;
+    QListWidgetItem *item = createEntry(dlg.title().isEmpty() ? tr("YouTube video") : dlg.title(),
+                                        MediaItem::YouTube, dlg.url(), {});
+    item->setData(MediaItem::YouTubeStatusRole, int(dlg.status()));
+    insertEntry(item);
+    if (dlg.status() == MediaItem::YouTubeUnchecked) {
+        checkYouTube(dlg.url());   // e.g. no internet while adding: try again
     }
-    insertEntry(createEntry(tr("YouTube video"), MediaItem::YouTube, url, {}));
-    fetchYouTubeTitle(url);
 }
 
 void MainWin::convertPresentations() {
@@ -570,24 +567,44 @@ void MainWin::addCountdown() {
     insertEntry(item);
 }
 
-void MainWin::fetchYouTubeTitle(const QString &url) {
-    // oEmbed delivers the title without an API key
-    QUrl request(QStringLiteral("https://www.youtube.com/oembed"));
-    request.setQuery(QUrlQuery{{"url", url}, {"format", "json"}});
+QString MainWin::youTubeProblem(int status) const {
+    switch (status) {
+    case MediaItem::YouTubeNotFound:
+        return tr("This video was not found on YouTube. Please check the link.");
+    case MediaItem::YouTubeNotEmbeddable:
+        return tr("This video cannot be played here: it is private, or its owner "
+                  "allows no playback in other programs.");
+    default:
+        return {};
+    }
+}
 
-    QNetworkReply *reply = m_network->get(QNetworkRequest(request));
+void MainWin::checkYouTube(const QString &url) {
+    // The answer gives the title and tells whether the video exists and may be played here
+    QNetworkReply *reply = m_network->get(QNetworkRequest(MediaItem::youTubeCheckUrl(url)));
     connect(reply, &QNetworkReply::finished, this, [this, reply, url] {
         reply->deleteLater();
-        const QString title = QJsonDocument::fromJson(reply->readAll()).object().value("title").toString();
-        if (title.isEmpty()) {
-            return;
+        const QVariant httpStatus = reply->attribute(QNetworkRequest::HttpStatusCodeAttribute);
+        if (!httpStatus.isValid()) {
+            return;   // no internet: cannot tell, the entry stays as it is
         }
+        const auto status = MediaItem::youTubeStatusFromHttp(httpStatus.toInt());
+        const QString title = QJsonDocument::fromJson(reply->readAll()).object().value("title").toString();
+
         // The entry may have been moved or removed in the meantime -> search it again
         for (int i = 0; i < ui->playlistWidget->count(); ++i) {
             QListWidgetItem *item = ui->playlistWidget->item(i);
-            if (item->data(MediaItem::SourceRole).toString() == url
-                && item->text() == tr("YouTube video")) {
+            if (MediaItem::Type(item->data(MediaItem::TypeRole).toInt()) != MediaItem::YouTube
+                || item->data(MediaItem::SourceRole).toString() != url) {
+                continue;
+            }
+            item->setData(MediaItem::YouTubeStatusRole, int(status));
+            if (!title.isEmpty() && item->text() == tr("YouTube video")) {
                 item->setText(title);
+            }
+            const QString problem = youTubeProblem(status);
+            if (item == ui->playlistWidget->currentItem() && !problem.isEmpty()) {
+                ui->previewLabel->setText(problem);   // not showEntry(): a running video would restart
             }
         }
     });
@@ -659,6 +676,25 @@ void MainWin::editEntry(QListWidgetItem *item) {
     const auto type = MediaItem::Type(item->data(MediaItem::TypeRole).toInt());
     if (type == MediaItem::Video) {
         editVideoSettings(item);
+        return;
+    }
+    if (type == MediaItem::YouTube) {
+        // Corrects the link; a title the user has not changed follows the video
+        const QString oldUrl = item->data(MediaItem::SourceRole).toString();
+        YouTubeDialog dlg(m_network, oldUrl, this);
+        if (dlg.exec() != QDialog::Accepted || dlg.url() == oldUrl) {
+            return;
+        }
+        const bool defaultTitle = item->text() == tr("YouTube video")
+                                  || item->data(MediaItem::YouTubeStatusRole).toInt() != MediaItem::YouTubeOk;
+        item->setData(MediaItem::SourceRole, dlg.url());
+        item->setData(MediaItem::YouTubeStatusRole, int(dlg.status()));
+        if (defaultTitle || !dlg.title().isEmpty()) {
+            item->setText(dlg.title().isEmpty() ? tr("YouTube video") : dlg.title());
+        }
+        if (item == ui->playlistWidget->currentItem()) {
+            showEntry(item);   // loads the corrected video
+        }
         return;
     }
     if (type == MediaItem::Countdown) {
@@ -763,6 +799,12 @@ void MainWin::loadEvent(const QString &id) {
     }
     m_loading = false;
     convertPresentations();
+    for (int i = 0; i < ui->playlistWidget->count(); ++i) {
+        const QListWidgetItem *item = ui->playlistWidget->item(i);
+        if (MediaItem::Type(item->data(MediaItem::TypeRole).toInt()) == MediaItem::YouTube) {
+            checkYouTube(item->data(MediaItem::SourceRole).toString());
+        }
+    }
 
     if (!m_eventId.isEmpty()) {
         settings.setValue("lastEvent", m_eventId);
@@ -1368,7 +1410,8 @@ void MainWin::showEntry(QListWidgetItem *item) {
         }
         ui->slidesListWidget->hide();
         ui->videoToolbar->show();
-        ui->previewLabel->setText(tr("YouTube video – plays on the projector"));
+        const QString problem = youTubeProblem(item->data(MediaItem::YouTubeStatusRole).toInt());
+        ui->previewLabel->setText(problem.isEmpty() ? tr("YouTube video – plays on the projector") : problem);
         if (!isHolding()) {   // otherwise loaded when the loop / countdown is ended
             m_beamer->setImage(QImage());
             m_beamer->loadYouTube(m_youTubeId);

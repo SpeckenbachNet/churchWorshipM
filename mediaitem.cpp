@@ -23,6 +23,8 @@
 #include <QPainter>
 #include <QRegularExpression>
 #include <QStyle>
+#include <QUrl>
+#include <QUrlQuery>
 
 namespace {
 
@@ -173,6 +175,29 @@ bool isVideoSuffix(const QString &suffix)
 {
     static const QStringList suffixes{"mp4", "m4v", "mov", "mkv", "webm", "avi", "wmv", "mpg", "mpeg"};
     return suffixes.contains(suffix.toLower());
+}
+
+QUrl youTubeCheckUrl(const QString &url)
+{
+    QUrl request(QStringLiteral("https://www.youtube.com/oembed"));
+    request.setQuery(QUrlQuery{{"url", url}, {"format", "json"}});
+    return request;
+}
+
+YouTubeStatus youTubeStatusFromHttp(int httpCode)
+{
+    switch (httpCode) {
+    case 200:
+        return YouTubeOk;
+    case 400:
+    case 404:
+        return YouTubeNotFound;
+    case 401:
+    case 403:
+        return YouTubeNotEmbeddable;
+    default:
+        return YouTubeUnchecked;
+    }
 }
 
 QString youTubeId(const QString &url)
