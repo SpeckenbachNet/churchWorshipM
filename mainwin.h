@@ -227,6 +227,7 @@ private:
     QTimer                     m_loopTimer;
     QWidget                   *m_loopBar = nullptr;    // "On the projector: ..." above the preview
     QLabel                    *m_loopLabel = nullptr;
+    QLabel                    *m_previewHint = nullptr; // "Preview only" while the projector is held
     QShortcut                 *m_goLiveShortcut = nullptr;
 
     QListWidgetItem              *m_countdownItem = nullptr;   // for the live preview (nullptr: removed)
