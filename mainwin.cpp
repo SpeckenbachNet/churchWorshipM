@@ -255,6 +255,13 @@ void MainWin::initializeForm() {
     loopLayout->addWidget(loopEndBtn);
     ui->rightPanelLayout->insertWidget(0, m_loopBar);
     m_loopBar->hide();
+    m_previewHint = new QLabel(ui->rightPanel);
+    m_previewHint->setWordWrap(true);
+    m_previewHint->setTextFormat(Qt::PlainText);
+    m_previewHint->setEnabled(false);   // muted
+    m_previewHint->setContentsMargins(12, 0, 12, 0);
+    ui->rightPanelLayout->insertWidget(1, m_previewHint);
+    m_previewHint->hide();
     connect(loopEndBtn, &QPushButton::clicked, this, &MainWin::goLive);
 
     ui->splitter->setStretchFactor(0, 0);
@@ -364,8 +371,10 @@ void MainWin::initializeConnections() {
         }
     });
 
-    connect(ui->playlistWidget, &QListWidget::currentItemChanged, this,
-            [this](QListWidgetItem *current) { showEntry(current); });
+    connect(ui->playlistWidget, &QListWidget::currentItemChanged, this, [this](QListWidgetItem *current) {
+        showEntry(current);
+        updateLiveBar();   // "preview only" hint
+    });
     connect(ui->playlistWidget, &QListWidget::itemDoubleClicked, this, &MainWin::editEntry);
     // Context menu: edit, and the background of text entries (bible texts have no other place for it)
     ui->playlistWidget->setContextMenuPolicy(Qt::CustomContextMenu);
@@ -1666,6 +1675,19 @@ void MainWin::updateLiveBar() {
     const bool live = isLooping() || isCountdownRunning();
     m_loopBar->setVisible(live);
     m_goLiveShortcut->setEnabled(live);
+
+    // Another entry chosen while the projector is held: it is only shown here for now
+    QListWidgetItem *current = ui->playlistWidget->currentItem();
+    QListWidgetItem *onProjector = isCountdownRunning() && !m_countdownSettings.corner ? m_countdownItem
+                                                                                        : m_loopItem;
+    const bool previewOnly = isHolding() && current && current != onProjector;
+    m_previewHint->setVisible(previewOnly);
+    if (previewOnly) {
+        const QString running = onProjector ? onProjector->text()
+                                            : (isLooping() ? tr("Announcements") : tr("Countdown"));
+        m_previewHint->setText(tr("Preview only – \"%1\" is running on the projector. "
+                                  "\"End\" or Return shows this entry instead.").arg(running));
+    }
     if (!live) {
         return;
     }
