@@ -184,6 +184,7 @@ private:
     QToolButton *m_libraryUpdateBtn = nullptr;
     QToolButton *m_libraryRemoveBtn = nullptr;
     QToolButton *m_libraryApplyBtn = nullptr;
+    QToolButton *m_librarySettingsBtn = nullptr;
 
     QToolButton *m_songsBtn = nullptr;          // presenter toolbar
     QToolButton *m_songsBackBtn = nullptr;      // songs toolbar
@@ -209,6 +210,7 @@ private:
     QWidget        *m_statsPage = nullptr;        // statistics: toolbar + StatisticsPage
     StatisticsPage *m_statsBrowser = nullptr;
     QWidget        *m_statsReturnPage = nullptr;  // where "Back" goes
+    QWidget        *m_settingsReturnPage = nullptr;  // where "Back" of the settings goes
 
     QToolButton *m_playBtn = nullptr;
     QToolButton *m_pauseBtn = nullptr;

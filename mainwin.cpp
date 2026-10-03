@@ -110,7 +110,7 @@ void MainWin::initializeForm() {
 
     // --- Settings toolbar
     m_backBtn = ui->settingsToolbar->addButton("backBtn", tr("Back"), ":icons/back", true);
-    m_backBtn->setToolTip(tr("Back to the presentation"));
+    m_backBtn->setToolTip(tr("Back to where the settings were opened"));
     ui->settingsToolbar->addSpacer();
     m_settingsHelpBtn = ui->settingsToolbar->addButton("settingsHelpBtn", "", ":icons/help");
     m_settingsHelpBtn->setEnabled(false);
@@ -129,7 +129,9 @@ void MainWin::initializeForm() {
     m_libraryUpdateBtn->setToolTip(tr("Take over the newer version of the original file"));
     m_libraryRemoveBtn = ui->libraryToolbar->addButton("libraryRemoveBtn", tr("Remove"), ":icons/remove", true);
     ui->libraryToolbar->addSpacer();
-    m_libraryApplyBtn  = ui->libraryToolbar->addButton("libraryApplyBtn", tr("Apply"), ":icons/check", true);
+    m_librarySettingsBtn = ui->libraryToolbar->addButton("librarySettingsBtn", "", ":icons/settings");
+    m_librarySettingsBtn->setToolTip(tr("Media library settings"));
+    m_libraryApplyBtn  =ui->libraryToolbar->addButton("libraryApplyBtn", tr("Apply"), ":icons/check", true);
     m_libraryApplyBtn->setToolTip(tr("Put the selected entries into the playlist"));
 
     // --- Songs toolbar
@@ -349,8 +351,13 @@ void MainWin::initializeConnections() {
     connect(playlistModel, &QAbstractItemModel::rowsRemoved,  header, updateCount);
     connect(playlistModel, &QAbstractItemModel::modelReset,   header, updateCount);
     connect(&m_saveTimer, &QTimer::timeout, this, &MainWin::saveEvent);
-    connect(m_settingsBtn, &QToolButton::clicked, this, [this] { showPage(ui->settingsPage); });
-    connect(m_backBtn,     &QToolButton::clicked, this, [this] { showPage(ui->presenterPage); });
+    connect(m_settingsBtn, &QToolButton::clicked, this, [this] {
+        m_settingsReturnPage = ui->presenterPage;
+        showPage(ui->settingsPage);
+    });
+    connect(m_backBtn,     &QToolButton::clicked, this, [this] {
+        showPage(m_settingsReturnPage ? m_settingsReturnPage : ui->presenterPage);
+    });
     connect(m_bibleBackBtn,  &QToolButton::clicked, this, [this] { showPage(ui->presenterPage); });
     connect(m_songsBtn,       &QToolButton::clicked, this, [this] { openSongsPage(false); });
     connect(m_songsBackBtn,   &QToolButton::clicked, this, [this] { showPage(ui->presenterPage); });
@@ -375,6 +382,11 @@ void MainWin::initializeConnections() {
     connect(ui->songsBrowser, &SongsPage::pickRequested, this, &MainWin::applySongSelection);
     connect(m_libraryBtn,       &QToolButton::clicked, this, [this] { openLibraryPage(false); });
     connect(m_libraryBackBtn,   &QToolButton::clicked, this, [this] { showPage(ui->presenterPage); });
+    connect(m_librarySettingsBtn, &QToolButton::clicked, this, [this] {
+        m_settingsReturnPage = ui->libraryPage;   // "Back" returns to the media library
+        ui->settingsTabs->showTab(SettingsPage::LibraryTab);
+        showPage(ui->settingsPage);
+    });
     connect(m_libraryAddBtn,    &QToolButton::clicked, ui->libraryBrowser, &LibraryPage::addFiles);
     connect(m_libraryUpdateBtn, &QToolButton::clicked, ui->libraryBrowser, &LibraryPage::updateSelected);
     connect(m_libraryRemoveBtn, &QToolButton::clicked, ui->libraryBrowser, &LibraryPage::removeSelected);
@@ -384,7 +396,11 @@ void MainWin::initializeConnections() {
     connect(m_library, &MediaLibrary::changed, this, &MainWin::syncLibraryPaths);
     connect(m_bibleApplyBtn, &QToolButton::clicked, this, &MainWin::applyBiblePassage);
     connect(ui->bibleBrowser, &BiblePage::selectionChanged, this, &MainWin::updateButtonStates);
-    connect(ui->bibleBrowser, &BiblePage::settingsRequested, this, [this] { showPage(ui->settingsPage); });
+    connect(ui->bibleBrowser, &BiblePage::settingsRequested, this, [this] {
+        m_settingsReturnPage = ui->presenterPage;
+        ui->settingsTabs->showTab(SettingsPage::BiblesTab);
+        showPage(ui->settingsPage);
+    });
     connect(m_beamerBtn, &QToolButton::toggled, this, &MainWin::setBeamerVisible);
     connect(m_blackBtn,  &QToolButton::toggled, this, &MainWin::setBlack);
 
