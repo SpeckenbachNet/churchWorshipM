@@ -56,21 +56,48 @@ public:
         QStyleOptionViewItem opt(option);
         initStyleOption(&opt, index);
         const QIcon icon = opt.icon;
-        opt.text.clear();
-        opt.icon = QIcon();
-        const QWidget *widget = opt.widget;
-        QStyle *style = widget ? widget->style() : QApplication::style();
-        style->drawControl(QStyle::CE_ItemViewItem, &opt, painter, widget);
 
         painter->save();
+        painter->setRenderHint(QPainter::Antialiasing);
         const bool selected = opt.state & QStyle::State_Selected;
-        const QColor textColor = opt.palette.color(QPalette::Normal, selected ? QPalette::HighlightedText
-                                                                              : QPalette::Text);
+        const bool hovered  = opt.state & QStyle::State_MouseOver;
+        // Our own selection: the style only highlights part of the tile, since we draw
+        // thumbnail and text ourselves. In an inactive window it stays visible, just muted.
+        const bool active = opt.state & QStyle::State_Active;
+        QColor highlight = opt.palette.color(QPalette::Active, QPalette::Highlight);
+        if (!active) {
+            highlight.setAlphaF(0.55);
+        }
+        // On the muted (inactive) selection normal text reads better in light themes
+        const QColor textColor = opt.palette.color(QPalette::Normal, selected && active ? QPalette::HighlightedText
+                                                                                        : QPalette::Text);
+
+        // Tile background: selection, or a light shimmer under the mouse
+        const QRectF tile = QRectF(opt.rect).adjusted(2.5, 2.5, -2.5, -2.5);
+        if (selected) {
+            painter->setPen(Qt::NoPen);
+            painter->setBrush(highlight);
+            painter->drawRoundedRect(tile, 8, 8);
+        } else if (hovered) {
+            QColor shimmer = opt.palette.color(QPalette::Text);
+            shimmer.setAlphaF(0.08);
+            painter->setPen(Qt::NoPen);
+            painter->setBrush(shimmer);
+            painter->drawRoundedRect(tile, 8, 8);
+        }
 
         // Thumbnail on a dark 16:9 area, like a slide
         const QRect thumb = thumbRect(opt.rect);
         painter->fillRect(thumb, QColor(0, 0, 0, 160));
         icon.paint(painter, thumb.adjusted(2, 2, -2, -2), Qt::AlignCenter);
+        if (selected) {
+            // Frame around the picture, so the selection shows even on bright images
+            QColor frame = highlight;
+            frame.setAlphaF(active ? 1.0 : 0.75);
+            painter->setPen(QPen(frame, 3));
+            painter->setBrush(Qt::NoBrush);
+            painter->drawRect(QRectF(thumb).adjusted(-1.5, -1.5, 1.5, 1.5));
+        }
 
         // Title
         QFont titleFont = opt.font;
@@ -148,6 +175,7 @@ LibraryPage::LibraryPage(QWidget *parent)
     m_list->setEditTriggers(QAbstractItemView::EditKeyPressed);   // F2 renames
     m_list->setContextMenuPolicy(Qt::CustomContextMenu);
     m_list->setItemDelegate(new LibraryDelegate(m_list));
+    m_list->viewport()->setAttribute(Qt::WA_Hover);   // hover shimmer on the tiles
 
     m_status = new QLabel(this);
     m_status->setEnabled(false);   // muted
@@ -260,20 +288,31 @@ void LibraryPage::updateItem(QListWidgetItem *item)
     const QImage thumb = m_library->thumbnail(e.id);
     item->setIcon(thumb.isNull() ? MediaItem::typeIcon(e.type) : QIcon(QPixmap::fromImage(thumb)));
 
-    QStringList info{MediaItem::typeName(e.type)};
-    info << (e.linked ? tr("🔗 linked") : tr("copy"));
+    // A copy is the normal case and needs no mark; only links can get lost (missing USB stick)
+    const QString storage = e.linked ? tr("🔗 linked") : tr("stored in the media library");
     State state = StateOk;
+    QString stateText;
     if (e.isMissing()) {
         state = StateMissing;
-        info << tr("file missing");
+        stateText = tr("file missing");
     } else if (e.updateAvailable()) {
         state = StateUpdate;
-        info << tr("⟳ newer version");
+        stateText = tr("⟳ newer version");
+    }
+
+    QStringList info{MediaItem::typeName(e.type)};
+    QStringList tipInfo{MediaItem::typeName(e.type), storage};
+    if (e.linked) {
+        info << storage;
+    }
+    if (!stateText.isEmpty()) {
+        info << stateText;
+        tipInfo << stateText;
     }
     item->setData(kInfoRole, info.join(QStringLiteral(" · ")));
     item->setData(kStateRole, state);
 
-    QString tooltip = QStringLiteral("<b>%1</b><br>%2").arg(e.title.toHtmlEscaped(), info.join(QStringLiteral(" · ")));
+    QString tooltip = QStringLiteral("<b>%1</b><br>%2").arg(e.title.toHtmlEscaped(), tipInfo.join(QStringLiteral(" · ")));
     tooltip += "<br>" + (e.linked ? tr("File: %1") : tr("Original: %1")).arg(e.originalPath.toHtmlEscaped());
     item->setToolTip(tooltip);
 }

@@ -100,3 +100,8 @@ SettingsPage::SettingsPage(QWidget *parent)
     layout->setContentsMargins(0, 0, 0, 0);
     layout->addWidget(m_tabs);
 }
+
+void SettingsPage::showTab(Tab tab)
+{
+    m_tabs->setCurrentIndex(tab);
+}

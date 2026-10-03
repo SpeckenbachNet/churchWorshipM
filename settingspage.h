@@ -27,7 +27,11 @@ class SettingsPage : public QWidget {
     Q_OBJECT
 
 public:
+    enum Tab { BiblesTab, LibraryTab, SlidesTab };   // order of the tabs
+
     explicit SettingsPage(QWidget *parent = nullptr);
+
+    void showTab(Tab tab);
 
 private:
     QTabWidget        *m_tabs = nullptr;
